@@ -1,0 +1,120 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1f2328;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --win: #15803d;
+  --loss: #b91c1c;
+  --draw: #6b7280;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181d;
+    --fg: #e6e6e6;
+    --muted: #9ca3af;
+    --border: #2d3139;
+    --accent: #60a5fa;
+    --win: #4ade80;
+    --loss: #f87171;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+a {
+  color: var(--accent);
+}
+
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.search input,
+.search button {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+.search input[type='number'] {
+  width: 5em;
+  margin-left: 6px;
+}
+
+.search button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.search button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.status,
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--loss);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+table.games {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.games th,
+.games td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.games td.opening {
+  white-space: normal;
+}
+
+.result-win {
+  color: var(--win);
+}
+.result-loss {
+  color: var(--loss);
+}
+.result-draw {
+  color: var(--draw);
+}
