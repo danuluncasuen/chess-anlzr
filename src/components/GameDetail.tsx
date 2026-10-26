@@ -105,6 +105,9 @@ export function GameDetail({ game, analyzed, onBack }: Props) {
                       {pct(m.winProbBefore)} → {pct(m.winProbAfter)}
                     </span>
                     {m.bestMoveSan && <span className="muted">best was {m.bestMoveSan}</span>}
+                    <span className="muted">
+                      {m.tags.includes('rook-endgame') ? 'rook endgame' : m.phase}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -121,6 +124,7 @@ export function GameDetail({ game, analyzed, onBack }: Props) {
                     <th>Eval after</th>
                     <th>Rating</th>
                     <th>Best move</th>
+                    <th>Phase</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -130,6 +134,7 @@ export function GameDetail({ game, analyzed, onBack }: Props) {
                       <td>{formatScore(m.evalAfter)}</td>
                       <td>{ERROR_CLASSES.includes(m.class) ? <ClassBadge cls={m.class} /> : CLASS_LABEL[m.class]}</td>
                       <td>{m.class === 'best' ? '' : (m.bestMoveSan ?? '')}</td>
+                      <td>{m.tags.includes('rook-endgame') ? 'rook endgame' : m.phase}</td>
                     </tr>
                   ))}
                 </tbody>

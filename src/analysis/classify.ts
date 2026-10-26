@@ -1,3 +1,4 @@
+import { phaseOf, tagsOf, type MoveTag, type Phase } from '../chess/phase'
 import { pgnToPositions, uciToSan } from '../chess/positions'
 import type { Score } from '../engine/types'
 import type { Analysis, Color } from '../types'
@@ -31,7 +32,12 @@ export interface MoveAnalysis {
   /** Drop in the mover's eval in centipawns (capped at ±1000, mate counts as 1000). */
   centipawnLoss: number
   class: MoveClass
+  /** Phase and tags of the position the move was played in. */
+  phase: Phase
+  tags: MoveTag[]
 }
+
+const PHASE_ORDER: Phase[] = ['opening', 'middlegame', 'endgame']
 
 /**
  * White's winning chances (0..1) for a score, using Lichess's logistic curve
@@ -65,7 +71,10 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
     )
   }
 
+  let phaseIndex = 0
   return moves.map((move, i) => {
+    // Phases only move forward (a promotion doesn't turn an endgame back into a middlegame).
+    phaseIndex = Math.max(phaseIndex, PHASE_ORDER.indexOf(phaseOf(positions[i]!, move.moveNumber)))
     const before = analysis.plies[i]!
     const after = analysis.plies[i + 1]!
     const sign = move.color === 'white' ? 1 : -1
@@ -90,6 +99,8 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
       winProbLoss,
       centipawnLoss,
       class: isBest ? 'best' : classifyLoss(winProbLoss),
+      phase: PHASE_ORDER[phaseIndex]!,
+      tags: tagsOf(positions[i]!),
     }
   })
 }

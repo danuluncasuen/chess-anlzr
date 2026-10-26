@@ -35,6 +35,10 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
   const area = `${line}L${x(n)},${y(0)}L${x(0)},${y(0)}Z`
   const errors = moves.filter((m) => m.color === myColor && ERROR_CLASSES.has(m.class))
   const moveTicks = xTicks(moves, innerW)
+  // Where each phase starts: the position before its first move.
+  const phaseStarts = moves
+    .filter((m, i) => i === 0 || m.phase !== moves[i - 1]!.phase)
+    .map((m) => ({ index: m.ply - 1, phase: m.phase }))
 
   const indexAt = (e: MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -92,6 +96,15 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
             <text key={t.index} className="axis-label" x={x(t.index)} y={HEIGHT - 6} textAnchor="middle">
               {t.label}
             </text>
+          ))}
+
+          {phaseStarts.map((p) => (
+            <g key={p.phase} className="phase-mark">
+              {p.index > 0 && <line x1={x(p.index)} x2={x(p.index)} y1={M.top} y2={M.top + innerH} />}
+              <text x={x(p.index) + 4} y={M.top + innerH - 6}>
+                {p.phase}
+              </text>
+            </g>
           ))}
 
           <path className="area" d={area} />

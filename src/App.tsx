@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
 import { AnalysisQueue } from './analysis/queue'
+import { summarize } from './analysis/summary'
+import { useClassifiedGames } from './analysis/useClassifiedGames'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { GameDetail } from './components/GameDetail'
 import { GameList } from './components/GameList'
+import { SummaryView } from './components/SummaryView'
 import { StockfishEngine } from './engine/stockfish'
 import { chessComSource } from './sources/chesscom/source'
 import type { Game } from './types'
@@ -69,6 +72,8 @@ export default function App() {
     }
   }
 
+  const classified = useClassifiedGames(games, queueState.analyzed)
+  const summary = useMemo(() => summarize(classified), [classified])
   const openGame = games?.find((g) => g.id === openGameId)
 
   return (
@@ -107,6 +112,7 @@ export default function App() {
           onBack={() => setOpenGameId(null)}
         />
       )}
+      {games && !openGame && <SummaryView summary={summary} totalGames={games.length} />}
       {games && !openGame && <GameList games={games} analysis={queueState} onOpen={setOpenGameId} />}
     </main>
   )
