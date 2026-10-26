@@ -278,6 +278,17 @@ table.games {
   font-variant-numeric: tabular-nums;
 }
 
+.eval-graph .phase-mark line {
+  stroke: var(--axis);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.eval-graph .phase-mark text {
+  fill: var(--axis-ink);
+  font-size: 11px;
+}
+
 .eval-graph .area {
   fill: var(--chart-area);
 }
@@ -372,4 +383,118 @@ table.games {
 
 tr.muted td {
   color: var(--muted);
+}
+
+.summary {
+  margin-top: 24px;
+}
+
+.summary h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.summary > p {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.stat-tile strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-tile span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.insights {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  line-height: 1.5;
+}
+
+.group-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.group-table caption {
+  text-align: left;
+  font-weight: 600;
+  padding-bottom: 6px;
+}
+
+.group-table th,
+.group-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.group-table thead th {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.group-table .num {
+  text-align: right;
+}
+
+.group-table .bar-col {
+  width: 40%;
+  min-width: 140px;
+}
+
+.group-table .sub-row th {
+  font-weight: 400;
+  padding-left: 20px;
+}
+
+.bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-track {
+  position: relative;
+  flex: 1;
+  height: 10px;
+}
+
+.bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.bar-avg {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--fg);
 }

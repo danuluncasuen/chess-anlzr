@@ -92,6 +92,10 @@ describe('classifyGame', () => {
     expect(nf6.bestMoveSan).toBe('g6')
   })
 
+  it('marks the phase of each move', () => {
+    expect(moves.every((m) => m.phase === 'opening' && m.tags.length === 0)).toBe(true)
+  })
+
   it('rejects an analysis that does not match the game', () => {
     expect(() => classifyGame(pgn, analysis(plies.slice(1)))).toThrow(/positions/)
   })
