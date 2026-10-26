@@ -1,5 +1,9 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
+import { AnalysisQueue } from './analysis/queue'
+import { AnalysisPanel } from './components/AnalysisPanel'
+import { GameDetail } from './components/GameDetail'
 import { GameList } from './components/GameList'
+import { StockfishEngine } from './engine/stockfish'
 import { chessComSource } from './sources/chesscom/source'
 import type { Game } from './types'
 
@@ -15,9 +19,14 @@ function readLastUsername(): string {
 }
 
 export default function App() {
+  const [queue] = useState(() => new AnalysisQueue(() => new StockfishEngine()))
+  const queueState = useSyncExternalStore(queue.subscribe, queue.getState)
+  useEffect(() => () => void queue.dispose(), [queue])
+
   const [username, setUsername] = useState(readLastUsername)
   const [limit, setLimit] = useState(DEFAULT_LIMIT)
   const [games, setGames] = useState<Game[] | null>(null)
+  const [openGameId, setOpenGameId] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -46,6 +55,9 @@ export default function App() {
         onProgress: (p) => setStatus(p.message),
       })
       setGames(result)
+      setOpenGameId(null)
+      await queue.setGames(result)
+      if (!controller.signal.aborted) queue.start()
     } catch (err) {
       if (controller.signal.aborted) return
       setError(err instanceof Error ? err.message : String(err))
@@ -56,6 +68,8 @@ export default function App() {
       }
     }
   }
+
+  const openGame = games?.find((g) => g.id === openGameId)
 
   return (
     <main>
@@ -85,7 +99,15 @@ export default function App() {
 
       {status && <p className="status">{status}</p>}
       {error && <p className="error">{error}</p>}
-      {games && <GameList games={games} />}
+      {games && <AnalysisPanel queue={queue} state={queueState} />}
+      {games && openGame && (
+        <GameDetail
+          game={openGame}
+          analyzed={queueState.analyzed.has(openGame.id)}
+          onBack={() => setOpenGameId(null)}
+        />
+      )}
+      {games && !openGame && <GameList games={games} analysis={queueState} onOpen={setOpenGameId} />}
     </main>
   )
 }

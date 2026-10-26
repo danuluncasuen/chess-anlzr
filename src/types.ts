@@ -1,3 +1,5 @@
+import type { PositionEval } from './engine/types'
+
 export type Color = 'white' | 'black'
 export type GameResult = 'win' | 'loss' | 'draw'
 export type TimeClass = 'bullet' | 'blitz' | 'rapid' | 'daily'
@@ -22,4 +24,19 @@ export interface Game {
   /** Human-readable opening name, or null if unknown. */
   opening: string | null
   pgn: string
+}
+
+/** Engine output for one game. Re-analyze when engineId or depth changes. */
+export interface Analysis {
+  gameId: string
+  /** e.g. "Stockfish 19 Lite WASM" */
+  engineId: string
+  depth: number
+  /**
+   * One entry per position: plies[0] is the start, plies[i] the position after ply i
+   * (same indexing as GamePositions.positions). Scores are from White's point of view.
+   */
+  plies: PositionEval[]
+  /** Epoch milliseconds. */
+  analyzedAt: number
 }
