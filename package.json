@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-engine.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-engine.mjs",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "oxlint",
@@ -13,9 +15,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "chess.js": "^1.4.0",
     "dexie": "^4.4.6",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "stockfish": "^19.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
