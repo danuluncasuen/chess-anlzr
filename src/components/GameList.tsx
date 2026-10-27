@@ -33,28 +33,40 @@ export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }:
           </tr>
         </thead>
         <tbody>
-          {games.map((g) => (
-            <tr key={g.id}>
-              <td>
-                <a href={g.url} target="_blank" rel="noreferrer">
-                  {dateFormat.format(g.endTime)}
-                </a>
-              </td>
-              <td>
-                {g.timeClass} <span className="muted">{g.timeControl}</span>
-              </td>
-              <td>{g.myColor}</td>
-              <td>
-                {g.opponentName} <span className="muted">({g.opponentRating})</span>
-              </td>
-              <td className={`result-${g.result}`}>{g.result}</td>
-              <td className="opening" title={g.opening ?? undefined}>
-                {g.opening ?? '—'}
-              </td>
-              <td>{accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy ?? expectedAccuracy(g.myRating))}</td>
-              <td>{analysisStatus(g.id, analysis, onOpen)}</td>
-            </tr>
-          ))}
+          {games.map((g) => {
+            const analyzed = analysis.analyzed.has(g.id)
+            return (
+              <tr
+                key={g.id}
+                className={analyzed ? 'openable' : undefined}
+                // Tapping anywhere on an analyzed row opens it (the View button stays for keyboards).
+                onClick={(e) => {
+                  if (analyzed && !(e.target as HTMLElement).closest('a, button')) onOpen(g.id)
+                }}
+              >
+                <td className="date">
+                  <a href={g.url} target="_blank" rel="noreferrer">
+                    {dateFormat.format(g.endTime)}
+                  </a>
+                </td>
+                <td className="type">
+                  {g.timeClass} <span className="muted">{g.timeControl}</span>
+                </td>
+                <td className="color">{g.myColor}</td>
+                <td className="opponent">
+                  {g.opponentName} <span className="muted">({g.opponentRating})</span>
+                </td>
+                <td className={`result result-${g.result}`}>{g.result}</td>
+                <td className="opening" title={g.opening ?? undefined}>
+                  {g.opening ?? '—'}
+                </td>
+                <td className="accuracy">
+                  {accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy ?? expectedAccuracy(g.myRating))}
+                </td>
+                <td className="status-cell">{analysisStatus(g.id, analysis, onOpen)}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

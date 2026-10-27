@@ -12,8 +12,12 @@ export function readTheme(): Theme {
   }
 }
 
+/** Browser/phone status bar color for each theme (matches the page background). */
+const THEME_COLOR: Record<Theme, string> = { night: '#212121', cream: '#ffe2bd' }
+
 export function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme])
   try {
     localStorage.setItem(THEME_KEY, theme)
   } catch {
