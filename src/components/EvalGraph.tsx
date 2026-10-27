@@ -6,6 +6,8 @@ const HEIGHT = 200
 const M = { top: 8, right: 8, bottom: 22, left: 40 }
 /** Room a phase label needs to the right of its line ("middlegame" at 11px, plus padding). */
 const PHASE_LABEL_WIDTH = 72
+/** Must match .graph-tooltip's max-width in index.css. */
+const TOOLTIP_MAX_WIDTH = 240
 const ERROR_CLASSES = new Set(['inaccuracy', 'mistake', 'blunder'])
 
 interface Props {
@@ -62,7 +64,9 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
   }
 
   const active = hover ?? selected
-  const tooltipLeft = active === null ? 0 : Math.min(Math.max(x(active), 90), width - 90)
+  // The tooltip is centered on the point but kept inside the graph (it is at most TOOLTIP_MAX_WIDTH wide).
+  const half = Math.min(TOOLTIP_MAX_WIDTH, width) / 2
+  const tooltipLeft = active === null ? 0 : Math.min(Math.max(x(active), half), width - half)
 
   return (
     <div className="eval-graph" ref={wrapRef}>

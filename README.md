@@ -54,6 +54,7 @@ src/
   components/GameDetail.tsx     Per-game view: error counts, eval graph, biggest mistakes, all moves
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
+  components/GameBoard.tsx      Board for the selected move (react-chessboard): step controls, best-move arrows
   components/Intro.tsx          Start-page description, shown before any games are loaded
   components/ThemeToggle.tsx    Night/cream theme switch in the top bar
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
@@ -82,6 +83,9 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
   One game's accuracy scatters ±15 points, so the summary shows the average with a likely range, and each
   game's estimate starts from the player's usual accuracy and moves only 25% toward that game's
   (`GAME_WEIGHT`). Accuracy flattens out above ~2000, so estimates up there are unreliable.
+- **Board:** `react-chessboard` (MIT). Shows the position after the selected move with its squares tinted by
+  rating; "Best: …" switches to the position before it, with arrows for the move played and Stockfish's choice.
+  Board colors are fixed (cream/brown, like the icon) in both themes.
 - **Classification:** a move's loss is the drop in the mover's winning chances (Lichess formula, evals capped at
   ±10 pawns). Thresholds 5 / 10 / 15 points = inaccuracy / mistake / blunder, in `THRESHOLDS` in classify.ts.
   Playing the engine's best move always counts as "best".

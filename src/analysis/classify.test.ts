@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { Chess } from 'chess.js'
 import type { PositionEval, Score } from '../engine/types'
 import type { Analysis } from '../types'
 import { classifyGame, classifyLoss, formatScore, winProbability } from './classify'
@@ -83,6 +84,7 @@ describe('classifyGame', () => {
     expect(qh5.centipawnLoss).toBe(55)
     expect(qh5.winProbLoss).toBeCloseTo(winProbability(cp(35)) - winProbability(cp(-20)))
     expect(qh5.bestMoveSan).toBe('Nf3')
+    expect(qh5.bestMoveUci).toBe('g1f3')
 
     const nf6 = moves[5]!
     expect(nf6.color).toBe('black')
@@ -90,6 +92,12 @@ describe('classifyGame', () => {
     expect(nf6.winProbAfter).toBe(0)
     expect(nf6.centipawnLoss).toBe(1010)
     expect(nf6.bestMoveSan).toBe('g6')
+  })
+
+  it('links each move to the positions around it', () => {
+    expect(moves[0]!.fenBefore).toBe(new Chess().fen())
+    for (let i = 1; i < moves.length; i++) expect(moves[i]!.fenBefore).toBe(moves[i - 1]!.fenAfter)
+    expect(moves.at(-1)!.fenAfter).toContain('Q') // Qxf7# left the white queen on f7
   })
 
   it('marks the phase of each move', () => {
