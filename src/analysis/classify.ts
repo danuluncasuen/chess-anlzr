@@ -123,6 +123,19 @@ export function formatScore(score: Score): string {
 }
 
 /** Chess annotation symbols for each error class. */
+export const CLASS_LABEL: Record<MoveClass, string> = {
+  best: 'Best',
+  ok: 'OK',
+  inaccuracy: 'Inaccuracy',
+  mistake: 'Mistake',
+  blunder: 'Blunder',
+}
+
+/** Whether the engine preferred a different move (so there's a "best move" to show). */
+export function hasBetterMove(move: MoveAnalysis | undefined): boolean {
+  return !!move && move.class !== 'best' && !!move.bestMoveUci
+}
+
 export const CLASS_SYMBOL: Record<MoveClass, string> = {
   best: '',
   ok: '',

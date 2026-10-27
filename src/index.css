@@ -468,11 +468,6 @@ table.games {
   box-shadow: 0 2px 8px var(--shadow);
 }
 
-.selected-move {
-  min-height: 1.4em;
-  font-size: 14px;
-}
-
 .mistakes {
   list-style: none;
   padding: 0;
@@ -658,8 +653,141 @@ tr.openable {
   display: grid;
   grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
   gap: 16px 24px;
-  align-items: start;
   margin-top: 12px;
+}
+
+/* Graph, move card, then the move list filling the rest of the board's height. */
+.graph-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.move-card {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.move-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.chance-bar {
+  display: flex;
+  height: 8px;
+  margin: 10px 0 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.chance-kept {
+  background: var(--fg);
+}
+.chance-gained {
+  background: var(--win);
+}
+.chance-lost {
+  background: var(--muted);
+}
+.chance-lost-inaccuracy {
+  background: var(--inaccuracy);
+}
+.chance-lost-mistake {
+  background: var(--mistake);
+}
+.chance-lost-blunder {
+  background: var(--blunder);
+}
+
+.chance-labels,
+.move-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 13px;
+}
+
+.move-card-foot {
+  margin-top: 6px;
+  align-items: center;
+}
+
+.move-card-foot .link-button {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* flex-basis 0 so the list never makes the row taller than the board; it scrolls instead. */
+.move-list {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 140px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 3em 1fr 1fr;
+  align-items: center;
+}
+
+.move-row:nth-child(even) {
+  background: var(--surface);
+}
+
+.move-number {
+  padding-left: 10px;
+  color: var(--muted);
+}
+
+.move-cell {
+  font: inherit;
+  text-align: left;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.move-cell:hover {
+  background: var(--border);
+}
+
+.move-cell[aria-current='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.move-symbol {
+  margin-left: 1px;
+  font-weight: 600;
+}
+.symbol-inaccuracy {
+  color: var(--inaccuracy);
+}
+.symbol-mistake {
+  color: var(--mistake);
+}
+.symbol-blunder {
+  color: var(--blunder);
+}
+.move-cell[aria-current='true'] .move-symbol {
+  color: inherit;
 }
 
 .game-board {
@@ -723,6 +851,12 @@ tr.openable {
 @media (max-width: 760px) {
   .board-and-graph {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Stacked: no board height to fill, so give the list its own. */
+  .move-list {
+    flex: none;
+    max-height: 220px;
   }
 }
 
