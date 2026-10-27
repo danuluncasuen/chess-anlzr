@@ -1,4 +1,5 @@
 import type { Game } from '../types'
+import { gameAccuracy } from './accuracy'
 import type { MoveAnalysis } from './classify'
 
 export interface ClassifiedGame {
@@ -24,7 +25,22 @@ export interface GroupStats {
   blunders: number
 }
 
+/** Both players' accuracy in one game (null if they made no moves). */
+export interface GameAccuracy {
+  mine: number | null
+  theirs: number | null
+}
+
+export function accuracyOf({ game, moves }: ClassifiedGame): GameAccuracy {
+  const opponent = game.myColor === 'white' ? 'black' : 'white'
+  return { mine: gameAccuracy(moves, game.myColor), theirs: gameAccuracy(moves, opponent) }
+}
+
 export interface Summary {
+  /** The player's average game accuracy, or null with no games. */
+  accuracy: number | null
+  /** The player's average rating over the same games, for comparison. */
+  rating: number | null
   overall: GroupStats
   byPhase: GroupStats[]
   byColor: GroupStats[]
@@ -64,7 +80,14 @@ export function summarize(games: ClassifiedGame[]): Summary {
     stats(key, label, mine.filter(filter), total)
   const nonEmpty = (groups: GroupStats[]) => groups.filter((g) => g.moves > 0)
 
+  const accuracies = games
+    .map((g) => ({ rating: g.game.myRating, accuracy: accuracyOf(g).mine }))
+    .filter((a): a is { rating: number; accuracy: number } => a.accuracy !== null)
+  const mean = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null)
+
   return {
+    accuracy: mean(accuracies.map((a) => a.accuracy)),
+    rating: mean(accuracies.map((a) => a.rating)),
     overall: group('all', 'All moves', () => true),
     byPhase: nonEmpty(PHASES.map(([key, label]) => group(key, label, (pm) => pm.move.phase === key))),
     byColor: nonEmpty(COLORS.map(([key, label]) => group(key, label, (pm) => pm.game.myColor === key))),

@@ -27,6 +27,8 @@ src/
   analysis/analyzeGame.ts  Evaluates every position of one game
   analysis/queue.ts        Background queue: one game at a time, pause/resume, saves to IndexedDB
   analysis/classify.ts     Win-probability loss per move -> best/ok/inaccuracy/mistake/blunder
+  analysis/accuracy.ts     Lichess accuracy: per move from win% drop, per game volatility-weighted + harmonic mean
+  analysis/rating.ts       Rough rating estimate from accuracy (calibrated anchor points)
   analysis/summary.ts      Points lost by phase / color / time control / rook endgames, plus insights
   analysis/useClassifiedGames.ts  Loads + classifies analyzed games for the summary (cached per game)
   sources/
@@ -55,6 +57,13 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
 - **Phases:** opening = first 12 moves; endgame = 6 or fewer knights/bishops/rooks/queens left in total
   (replaces the spec's "queens off" rule, which put early queen trades into the endgame); otherwise middlegame.
   Rook endgame = only kings, rooks and pawns left. Constants in `src/chess/phase.ts`.
+- **Accuracy:** Lichess's formula (per-move accuracy from the win% drop; per game, the mean of a
+  volatility-weighted and a harmonic average). Implemented in `src/analysis/accuracy.ts`.
+- **Estimated rating:** `src/analysis/rating.ts` maps accuracy to rating with a log curve fitted on 290
+  chess.com blitz player-games (100–3261, engine at depth 12): 64% ≈ 300, 75% ≈ 1000, 81% ≈ 2000.
+  One game's accuracy scatters ±15 points, so the summary shows the average with a likely range, and each
+  game's estimate starts from the player's usual accuracy and moves only 25% toward that game's
+  (`GAME_WEIGHT`). Accuracy flattens out above ~2000, so estimates up there are unreliable.
 - **Classification:** a move's loss is the drop in the mover's winning chances (Lichess formula, evals capped at
   ±10 pawns). Thresholds 5 / 10 / 15 points = inaccuracy / mistake / blunder, in `THRESHOLDS` in classify.ts.
   Playing the engine's best move always counts as "best".
