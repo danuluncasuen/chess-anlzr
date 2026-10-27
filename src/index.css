@@ -1,37 +1,53 @@
+/*
+ * Two themes from the board's colors: night (charcoal #212121 with cream #ffe2bd text,
+ * the default) and cream (the reverse). Muted text and borders are cream/charcoal mixed
+ * into the background; muted text keeps at least 4.5:1 contrast in both themes.
+ */
 :root {
-  --bg: #ffffff;
-  --fg: #1f2328;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --accent: #2563eb;
-  --win: #15803d;
-  --loss: #b91c1c;
-  --draw: #6b7280;
-  /* Chart tokens (dataviz reference palette; status colors are mode-invariant) */
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --axis-ink: #898781;
-  --chart-area: rgba(37, 99, 235, 0.12);
+  --cream: #ffe2bd;
+  --charcoal: #212121;
+  --bg: var(--charcoal);
+  --surface: #2a2927;
+  --fg: var(--cream);
+  --muted: #a6957f;
+  --border: #423e38;
+  --accent: var(--cream);
+  --on-accent: var(--charcoal);
+  --win: #8fcf8a;
+  --loss: #f2897c;
+  --draw: var(--muted);
+  --shadow: rgba(0, 0, 0, 0.4);
+  /* Chart tokens (status colors keep their hue across themes) */
+  --grid: #34322f;
+  --axis: #4a463f;
+  --axis-ink: var(--muted);
+  --chart-area: rgba(255, 226, 189, 0.12);
   --inaccuracy: #fab219;
   --mistake: #ec835a;
-  --blunder: #d03b3b;
+  --blunder: #e05252;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181d;
-    --fg: #e6e6e6;
-    --muted: #9ca3af;
-    --border: #2d3139;
-    --accent: #60a5fa;
-    --win: #4ade80;
-    --loss: #f87171;
-    --grid: #2c2c2a;
-    --axis: #383835;
-    --chart-area: rgba(96, 165, 250, 0.16);
-  }
+:root[data-theme='cream'] {
+  --bg: var(--cream);
+  --surface: #ffecd4;
+  --fg: var(--charcoal);
+  --muted: #685f53;
+  --border: #dec5a6;
+  --accent: var(--charcoal);
+  --on-accent: var(--cream);
+  --win: #2e6b2a;
+  --loss: #a8281c;
+  --shadow: rgba(33, 33, 33, 0.15);
+  --grid: #f0d2ad;
+  --axis: #d4b48e;
+  --chart-area: rgba(33, 33, 33, 0.1);
+  /* Darker status colors so the dots keep 3:1 contrast on cream */
+  --inaccuracy: #a87200;
+  --mistake: #c4552c;
+  --blunder: #c62f2f;
+  color-scheme: light;
 }
 
 * {
@@ -44,10 +60,79 @@ body {
   color: var(--fg);
 }
 
+html {
+  scroll-padding-top: 64px;
+}
+
 main {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 12px 16px 32px;
+  font-size: 14px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.topnav {
+  display: flex;
+  gap: 14px;
+  font-size: 14px;
+}
+
+.topnav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.topnav a:hover {
+  color: var(--fg);
+}
+
+.theme-toggle {
+  margin-left: auto;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.theme-toggle:hover,
+.search input:hover {
+  border-color: var(--muted);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 a {
@@ -55,6 +140,7 @@ a {
 }
 
 .search {
+  font-size: 14px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -64,10 +150,10 @@ a {
 .search input,
 .search button {
   font: inherit;
-  padding: 6px 10px;
+  padding: 5px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: transparent;
+  background: var(--bg);
   color: inherit;
 }
 
@@ -79,7 +165,8 @@ a {
 .search button {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -105,19 +192,31 @@ a {
 table.games {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .games th,
 .games td {
   text-align: left;
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
+.games thead th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.games tbody tr:hover td {
+  background: var(--surface);
+}
+
 .games td.opening {
-  white-space: normal;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .result-win {
@@ -131,10 +230,11 @@ table.games {
 }
 
 .analysis {
-  margin-top: 16px;
-  padding: 12px;
+  margin-top: 4px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--surface);
 }
 
 .analysis-header {
@@ -168,7 +268,7 @@ table.games {
 .view-button,
 .link-button {
   font: inherit;
-  padding: 2px 10px;
+  padding: 1px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: transparent;
@@ -332,11 +432,11 @@ table.games {
   padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--bg);
+  background: var(--surface);
   font-size: 13px;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .selected-move {
@@ -386,12 +486,12 @@ tr.muted td {
 }
 
 .summary {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .summary h2 {
   margin: 0 0 4px;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .summary > p {
@@ -409,13 +509,14 @@ tr.muted td {
 .stat-tile {
   display: flex;
   flex-direction: column;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
+  background: var(--surface);
 }
 
 .stat-tile strong {
-  font-size: 24px;
+  font-size: 22px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -446,7 +547,7 @@ tr.muted td {
 
 .group-table th,
 .group-table td {
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   white-space: nowrap;

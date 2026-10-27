@@ -18,7 +18,7 @@ export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }:
   if (games.length === 0) return <p>No standard games found in the last few months.</p>
 
   return (
-    <div className="table-wrap">
+    <div className="table-wrap" id="games">
       <table className="games">
         <thead>
           <tr>
@@ -48,7 +48,9 @@ export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }:
                 {g.opponentName} <span className="muted">({g.opponentRating})</span>
               </td>
               <td className={`result-${g.result}`}>{g.result}</td>
-              <td className="opening">{g.opening ?? '—'}</td>
+              <td className="opening" title={g.opening ?? undefined}>
+                {g.opening ?? '—'}
+              </td>
               <td>{accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy ?? expectedAccuracy(g.myRating))}</td>
               <td>{analysisStatus(g.id, analysis, onOpen)}</td>
             </tr>
