@@ -498,3 +498,23 @@ tr.muted td {
   margin-left: -1px;
   background: var(--fg);
 }
+
+.verdict {
+  margin-top: 12px;
+}
+
+.verdict .stat-tiles {
+  margin-bottom: 8px;
+}
+
+.verdict p {
+  margin: 0 0 4px;
+}
+
+.trend-up {
+  color: var(--win);
+}
+
+.trend-down {
+  color: var(--loss);
+}

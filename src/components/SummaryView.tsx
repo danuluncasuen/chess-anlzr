@@ -1,3 +1,4 @@
+import { estimateRatingRange } from '../analysis/rating'
 import { insights, type GroupStats, type Summary } from '../analysis/summary'
 
 interface Props {
@@ -32,6 +33,12 @@ export function SummaryView({ summary, totalGames }: Props) {
       </p>
 
       <div className="stat-tiles">
+        {summary.accuracy !== null && (
+          <>
+            <StatTile value={`${summary.accuracy.toFixed(1)}%`} label="average accuracy" />
+            <RatingTile accuracy={summary.accuracy} games={overall.games} rating={summary.rating} />
+          </>
+        )}
         <StatTile value={overall.avgLoss.toFixed(1)} label="points lost per move" />
         <StatTile value={perGame(overall.blunders)} label="blunders per game" />
         <StatTile value={perGame(overall.mistakes)} label="mistakes per game" />
@@ -50,6 +57,22 @@ export function SummaryView({ summary, totalGames }: Props) {
       <GroupTable title="By color" rows={summary.byColor} overall={overall} />
       <GroupTable title="By time control" rows={summary.byTimeClass} overall={overall} />
     </section>
+  )
+}
+
+function RatingTile({ accuracy, games, rating }: { accuracy: number; games: number; rating: number | null }) {
+  const { estimate, low, high } = estimateRatingRange(accuracy, games)
+  return (
+    <div
+      className="stat-tile"
+      title="Rough estimate from your average accuracy, calibrated on chess.com blitz games. The range narrows as more games are analyzed."
+    >
+      <strong>~{estimate}</strong>
+      <span>
+        rating your accuracy suggests (likely {low}–{high})
+        {rating !== null && `; you're rated ~${Math.round(rating)}`}
+      </span>
+    </div>
   )
 }
 

@@ -7,6 +7,8 @@ import {
   type MoveAnalysis,
   type MoveClass,
 } from '../analysis/classify'
+import { gameAccuracy } from '../analysis/accuracy'
+import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
 import { EvalGraph } from './EvalGraph'
@@ -25,10 +27,12 @@ interface Props {
   game: Game
   /** Re-read the analysis when this flips to true. */
   analyzed: boolean
+  /** The player's average accuracy, which this game's rating estimate starts from. */
+  usualAccuracy: number | null
   onBack: () => void
 }
 
-export function GameDetail({ game, analyzed, onBack }: Props) {
+export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
   const [moves, setMoves] = useState<MoveAnalysis[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
@@ -80,6 +84,7 @@ export function GameDetail({ game, analyzed, onBack }: Props) {
 
       {moves && moves.length > 0 && (
         <>
+          <AccuracyVerdict game={game} moves={moves} usualAccuracy={usualAccuracy} />
           <ErrorCounts moves={moves} myColor={game.myColor} opponentColor={opponentColor} />
 
           <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
@@ -144,6 +149,69 @@ export function GameDetail({ game, analyzed, onBack }: Props) {
         </>
       )}
     </section>
+  )
+}
+
+const ONE_GAME_CAVEAT =
+  'One game says little on its own, so each estimate starts from the player’s usual level ' +
+  '(your average accuracy; for your opponent, the accuracy typical of their rating) ' +
+  'and moves only partway toward this game.'
+
+function AccuracyVerdict({
+  game,
+  moves,
+  usualAccuracy,
+}: {
+  game: Game
+  moves: MoveAnalysis[]
+  usualAccuracy: number | null
+}) {
+  const mine = gameAccuracy(moves, game.myColor)
+  const theirs = gameAccuracy(moves, game.myColor === 'white' ? 'black' : 'white')
+  if (mine === null) return <p className="muted">You made no moves in this game.</p>
+
+  const usual = usualAccuracy ?? expectedAccuracy(game.myRating)
+  const myEstimate = estimateGameRating(mine, usual)
+  const theirEstimate = theirs === null ? null : estimateGameRating(theirs, expectedAccuracy(game.opponentRating))
+  const fmt = (a: number) => `${a.toFixed(1)}%`
+  const vsUsual =
+    Math.abs(mine - usual) < 3 ? 'about your usual' : mine > usual ? 'above your usual' : 'below your usual'
+  let conclusion = `You played at ${fmt(mine)} accuracy (${vsUsual} ${fmt(usual)}), roughly ${myEstimate}-level play`
+  if (theirs !== null) {
+    const gap = mine - theirs
+    conclusion +=
+      Math.abs(gap) < 3
+        ? `, about as accurate as your opponent (${fmt(theirs)}).`
+        : gap > 0
+          ? `, more accurate than your opponent (${fmt(theirs)}).`
+          : `, less accurate than your opponent (${fmt(theirs)}).`
+  } else {
+    conclusion += '.'
+  }
+
+  return (
+    <div className="verdict">
+      <div className="stat-tiles" title={ONE_GAME_CAVEAT}>
+        <div className="stat-tile">
+          <strong>{fmt(mine)}</strong>
+          <span>your accuracy · played like ~{myEstimate}</span>
+        </div>
+        {theirs !== null && theirEstimate !== null && (
+          <div className="stat-tile">
+            <strong>{fmt(theirs)}</strong>
+            <span>
+              opponent · played like ~{theirEstimate} (rated {game.opponentRating})
+            </span>
+          </div>
+        )}
+      </div>
+      <p>
+        {conclusion}{' '}
+        <span className="muted" title={ONE_GAME_CAVEAT}>
+          (rough: one game moves the estimate only partway from your usual level)
+        </span>
+      </p>
+    </div>
   )
 }
 

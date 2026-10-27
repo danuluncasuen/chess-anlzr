@@ -1,4 +1,6 @@
 import type { QueueState } from '../analysis/queue'
+import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
+import type { GameAccuracy } from '../analysis/summary'
 import type { Game } from '../types'
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
@@ -6,10 +8,13 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
 interface Props {
   games: Game[]
   analysis: QueueState
+  accuracies: ReadonlyMap<string, GameAccuracy>
+  /** The player's average accuracy, which per-game rating estimates start from. */
+  usualAccuracy: number | null
   onOpen: (gameId: string) => void
 }
 
-export function GameList({ games, analysis, onOpen }: Props) {
+export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }: Props) {
   if (games.length === 0) return <p>No standard games found in the last few months.</p>
 
   return (
@@ -23,6 +28,7 @@ export function GameList({ games, analysis, onOpen }: Props) {
             <th>Opponent</th>
             <th>Result</th>
             <th>Opening</th>
+            <th title="Your accuracy, and the rating it suggests (rough)">Accuracy</th>
             <th>Analysis</th>
           </tr>
         </thead>
@@ -43,6 +49,7 @@ export function GameList({ games, analysis, onOpen }: Props) {
               </td>
               <td className={`result-${g.result}`}>{g.result}</td>
               <td className="opening">{g.opening ?? '—'}</td>
+              <td>{accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy ?? expectedAccuracy(g.myRating))}</td>
               <td>{analysisStatus(g.id, analysis, onOpen)}</td>
             </tr>
           ))}
@@ -71,4 +78,27 @@ function analysisStatus(
     return <span>{pct}%</span>
   }
   return <span className="muted">queued</span>
+}
+
+/** Games this many accuracy points above or below the player's usual get an arrow. */
+const NOTABLE_GAP = 5
+
+function accuracyCell(accuracy: number | null, usual: number) {
+  if (accuracy === null) return <span className="muted">—</span>
+  const gap = accuracy - usual
+  return (
+    <>
+      {accuracy.toFixed(1)}% <span className="muted">~{estimateGameRating(accuracy, usual)}</span>
+      {gap >= NOTABLE_GAP && (
+        <span className="trend trend-up" title={`${gap.toFixed(1)} points above your average`}>
+          {' '}▲
+        </span>
+      )}
+      {gap <= -NOTABLE_GAP && (
+        <span className="trend trend-down" title={`${(-gap).toFixed(1)} points below your average`}>
+          {' '}▼
+        </span>
+      )}
+    </>
+  )
 }
