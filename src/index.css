@@ -462,7 +462,8 @@ table.games {
   border-radius: 6px;
   background: var(--surface);
   font-size: 13px;
-  white-space: nowrap;
+  width: max-content;
+  max-width: 240px; /* TOOLTIP_MAX_WIDTH in EvalGraph.tsx */
   pointer-events: none;
   box-shadow: 0 2px 8px var(--shadow);
 }
@@ -652,10 +653,86 @@ tr.openable {
   cursor: pointer;
 }
 
+/* Board left, eval graph right; stacked on narrow screens (see the phone block below). */
+.board-and-graph {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 16px 24px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.game-board {
+  scroll-margin-top: 72px;
+}
+
+.board-frame {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.board-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.board-controls button {
+  font: inherit;
+  min-width: 40px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.board-controls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.board-controls .best-toggle {
+  margin-left: auto;
+}
+
+.board-controls .best-toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.board-caption {
+  margin: 6px 0 0;
+  font-size: 13px;
+  min-height: 1.4em;
+}
+
+.all-moves tbody tr {
+  cursor: pointer;
+}
+
+.all-moves tr.selected td {
+  background: var(--surface);
+  color: var(--fg);
+}
+
 /* Phones: one card-like row per game, a two-row top bar, bigger touch targets. */
+@media (max-width: 760px) {
+  .board-and-graph {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 640px) {
   html {
     scroll-padding-top: 116px;
+  }
+
+  .game-board {
+    scroll-margin-top: 116px;
   }
 
   main {
@@ -771,6 +848,7 @@ tr.openable {
   .search button,
   .view-button,
   .analysis button,
+  .board-controls button,
   .theme-toggle {
     min-height: 40px;
   }

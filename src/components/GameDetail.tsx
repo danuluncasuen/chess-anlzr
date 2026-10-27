@@ -12,6 +12,7 @@ import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
 import { EvalGraph } from './EvalGraph'
+import { GameBoard } from './GameBoard'
 
 const MAX_MISTAKES = 10
 const ERROR_CLASSES: MoveClass[] = ['inaccuracy', 'mistake', 'blunder']
@@ -61,6 +62,13 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
     .slice(0, MAX_MISTAKES)
   const selectedMove = selected ? moves?.[selected - 1] : undefined
 
+  /** Selects a move from the lists below the board, scrolling the board into view when stacked (phones). */
+  function showOnBoard(ply: number) {
+    setSelected(ply)
+    const board = document.querySelector('.game-board')
+    if (board && board.getBoundingClientRect().top < 0) board.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <section className="game-detail">
       <button type="button" className="link-button" onClick={onBack}>
@@ -87,10 +95,17 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
           <AccuracyVerdict game={game} moves={moves} usualAccuracy={usualAccuracy} />
           <ErrorCounts moves={moves} myColor={game.myColor} opponentColor={opponentColor} />
 
-          <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
-          <p className="selected-move" aria-live="polite">
-            {selectedMove ? describeSelected(selectedMove, game.myColor) : 'Select a point on the graph, or a mistake below, to inspect a move.'}
-          </p>
+          <div className="board-and-graph">
+            <GameBoard moves={moves} selected={selected} onSelect={setSelected} orientation={game.myColor} />
+            <div className="graph-column">
+              <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
+              <p className="selected-move" aria-live="polite">
+                {selectedMove
+                  ? describeSelected(selectedMove, game.myColor)
+                  : 'Select a point on the graph, or a mistake below, to see it on the board.'}
+              </p>
+            </div>
+          </div>
 
           <h3>Your biggest mistakes</h3>
           {myErrors.length === 0 ? (
@@ -102,7 +117,7 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
                   <button
                     type="button"
                     className={m.ply === selected ? 'selected' : undefined}
-                    onClick={() => setSelected(m.ply)}
+                    onClick={() => showOnBoard(m.ply)}
                   >
                     <ClassBadge cls={m.class} />
                     <strong>{moveLabel(m)}</strong>
@@ -134,7 +149,13 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
                 </thead>
                 <tbody>
                   {moves.map((m) => (
-                    <tr key={m.ply} className={m.color === game.myColor ? undefined : 'muted'}>
+                    <tr
+                      key={m.ply}
+                      className={[m.color === game.myColor ? '' : 'muted', m.ply === selected ? 'selected' : '']
+                        .join(' ')
+                        .trim() || undefined}
+                      onClick={() => showOnBoard(m.ply)}
+                    >
                       <td>{moveLabel(m)}</td>
                       <td>{formatScore(m.evalAfter)}</td>
                       <td>{ERROR_CLASSES.includes(m.class) ? <ClassBadge cls={m.class} /> : CLASS_LABEL[m.class]}</td>
