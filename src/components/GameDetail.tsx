@@ -89,7 +89,7 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
 
           <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
           <p className="selected-move" aria-live="polite">
-            {selectedMove ? describeSelected(selectedMove, game.myColor) : 'Click the graph or a mistake below to inspect a move.'}
+            {selectedMove ? describeSelected(selectedMove, game.myColor) : 'Select a point on the graph, or a mistake below, to inspect a move.'}
           </p>
 
           <h3>Your biggest mistakes</h3>

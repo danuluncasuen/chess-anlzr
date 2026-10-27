@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent } from 'react'
 import { AnalysisQueue } from './analysis/queue'
 import { accuracyOf, summarize } from './analysis/summary'
 import { useClassifiedGames } from './analysis/useClassifiedGames'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { GameDetail } from './components/GameDetail'
 import { GameList } from './components/GameList'
+import { Intro } from './components/Intro'
 import { SummaryView } from './components/SummaryView'
 import { ThemeToggle } from './components/ThemeToggle'
 import { StockfishEngine } from './engine/stockfish'
@@ -22,6 +23,14 @@ function readLastUsername(): string {
   }
 }
 
+/** Scrolls to an in-page section without adding a history entry (which Back would replay). */
+function scrollToSection(e: MouseEvent<HTMLAnchorElement>) {
+  const target = document.querySelector(e.currentTarget.hash)
+  if (!target) return
+  e.preventDefault()
+  target.scrollIntoView({ behavior: 'smooth' })
+}
+
 export default function App() {
   const [queue] = useState(() => new AnalysisQueue(() => new StockfishEngine()))
   const queueState = useSyncExternalStore(queue.subscribe, queue.getState)
@@ -35,6 +44,39 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  const listScrollRef = useRef(0)
+
+  // Opening a game adds a history entry, so the phone's back gesture (or the browser's
+  // back button) returns to the list at the same scroll position.
+  useEffect(() => {
+    const onPopState = () => {
+      setOpenGameId(null)
+      requestAnimationFrame(() => window.scrollTo(0, listScrollRef.current))
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  /** Back to the start page: stops loading and pauses analysis (finished results stay saved). */
+  function goHome(e: MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault()
+    abortRef.current?.abort()
+    abortRef.current = null
+    void queue.pause()
+    setGames(null)
+    setOpenGameId(null)
+    setStatus(null)
+    setError(null)
+    setLoading(false)
+    window.scrollTo(0, 0)
+  }
+
+  function openGameDetail(gameId: string) {
+    listScrollRef.current = window.scrollY
+    history.pushState({ gameId }, '')
+    setOpenGameId(gameId)
+    window.scrollTo(0, 0)
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -85,7 +127,11 @@ export default function App() {
     <>
       <header className="topbar">
         <div className="topbar-inner">
-          <h1>chess-anlzr</h1>
+          <h1>
+            <a href="/" className="brand" onClick={goHome}>
+              chess-anlzr
+            </a>
+          </h1>
           <form className="search" onSubmit={handleSubmit}>
             <input
               aria-label="chess.com username"
@@ -95,8 +141,9 @@ export default function App() {
               autoFocus
             />
             <label>
-              Games
+              <span className="limit-label">Games</span>
               <input
+                aria-label="Number of games"
                 type="number"
                 min={1}
                 max={200}
@@ -110,8 +157,12 @@ export default function App() {
           </form>
           {games && !openGame && (
             <nav className="topnav">
-              <a href="#summary">summary</a>
-              <a href="#games">games</a>
+              <a href="#summary" onClick={scrollToSection}>
+                summary
+              </a>
+              <a href="#games" onClick={scrollToSection}>
+                games
+              </a>
             </nav>
           )}
           <ThemeToggle />
@@ -120,13 +171,14 @@ export default function App() {
       <main>
         {status && <p className="status">{status}</p>}
         {error && <p className="error">{error}</p>}
+        {!games && <Intro />}
         {games && <AnalysisPanel queue={queue} state={queueState} />}
         {games && openGame && (
           <GameDetail
             game={openGame}
             analyzed={queueState.analyzed.has(openGame.id)}
             usualAccuracy={summary.accuracy}
-            onBack={() => setOpenGameId(null)}
+            onBack={() => history.back()}
           />
         )}
         {games && !openGame && <SummaryView summary={summary} totalGames={games.length} />}
@@ -136,7 +188,7 @@ export default function App() {
             analysis={queueState}
             accuracies={accuracies}
             usualAccuracy={summary.accuracy}
-            onOpen={setOpenGameId}
+            onOpen={openGameDetail}
           />
         )}
       </main>

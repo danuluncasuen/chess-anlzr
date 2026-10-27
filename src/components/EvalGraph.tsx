@@ -4,6 +4,8 @@ import type { Color } from '../types'
 
 const HEIGHT = 200
 const M = { top: 8, right: 8, bottom: 22, left: 40 }
+/** Room a phase label needs to the right of its line ("middlegame" at 11px, plus padding). */
+const PHASE_LABEL_WIDTH = 72
 const ERROR_CLASSES = new Set(['inaccuracy', 'mistake', 'blunder'])
 
 interface Props {
@@ -98,14 +100,22 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
             </text>
           ))}
 
-          {phaseStarts.map((p) => (
-            <g key={p.phase} className="phase-mark">
-              {p.index > 0 && <line x1={x(p.index)} x2={x(p.index)} y1={M.top} y2={M.top + innerH} />}
-              <text x={x(p.index) + 4} y={M.top + innerH - 6}>
-                {p.phase}
-              </text>
-            </g>
-          ))}
+          {phaseStarts.map((p) => {
+            // Labels too close to the right edge (narrow screens) go left of their line instead.
+            const flip = x(p.index) + PHASE_LABEL_WIDTH > M.left + innerW
+            return (
+              <g key={p.phase} className="phase-mark">
+                {p.index > 0 && <line x1={x(p.index)} x2={x(p.index)} y1={M.top} y2={M.top + innerH} />}
+                <text
+                  x={x(p.index) + (flip ? -4 : 4)}
+                  y={M.top + innerH - 6}
+                  textAnchor={flip ? 'end' : 'start'}
+                >
+                  {p.phase}
+                </text>
+              </g>
+            )
+          })}
 
           <path className="area" d={area} />
           <path className="line" d={line} />

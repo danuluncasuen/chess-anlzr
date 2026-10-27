@@ -11,7 +11,20 @@ npm test           # unit tests (watch mode); `npm run test:run` for a single ru
 npm run typecheck  # TypeScript strict check
 npm run lint       # oxlint
 npm run build      # production build into dist/ (static, for Cloudflare Pages)
+npm run serve:lan  # build, then serve on the home network at http://<mac-ip>:4173 (for phones)
 ```
+
+### Using it from a phone
+
+1. On the Mac: `npm run serve:lan`. It prints a `Network:` address such as `http://192.168.1.33:4173/`.
+   macOS may ask whether to allow incoming connections for `node`; allow it.
+2. On the phone (same Wi-Fi), open that address. `http://<mac-name>.local:4173` also works
+   (Mac name: System Settings → General → Sharing → Local hostname).
+3. Optional: Share → **Add to Home Screen** (iPhone) or ⋮ → **Add to Home screen** (Android) for an
+   icon that opens the app full-screen. The Mac has to be running `serve:lan` for it to load.
+
+Analyses are stored per device and per address, so the phone analyzes its games itself (slower than a
+laptop). It serves the production build rather than the dev server, which shouldn't be exposed to a network.
 
 ## Layout
 
@@ -41,10 +54,12 @@ src/
   components/GameDetail.tsx     Per-game view: error counts, eval graph, biggest mistakes, all moves
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
+  components/Intro.tsx          Start-page description, shown before any games are loaded
   components/ThemeToggle.tsx    Night/cream theme switch in the top bar
+  public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
   theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
   index.css                Color tokens for both themes (#212121 charcoal / #ffe2bd cream) + styles
-  App.tsx                  Sticky top bar (username form, section links) + views
+  App.tsx                  Sticky top bar (logo back to start, username form, section links) + views
 scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (runs before dev/build)
 ```
 

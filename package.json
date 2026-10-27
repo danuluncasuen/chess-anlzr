@@ -12,7 +12,8 @@
     "lint": "oxlint",
     "test": "vitest",
     "test:run": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve:lan": "npm run build && vite preview --host --port 4173 --strictPort"
   },
   "dependencies": {
     "chess.js": "^1.4.0",
