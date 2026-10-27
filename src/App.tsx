@@ -6,6 +6,7 @@ import { AnalysisPanel } from './components/AnalysisPanel'
 import { GameDetail } from './components/GameDetail'
 import { GameList } from './components/GameList'
 import { SummaryView } from './components/SummaryView'
+import { ThemeToggle } from './components/ThemeToggle'
 import { StockfishEngine } from './engine/stockfish'
 import { chessComSource } from './sources/chesscom/source'
 import type { Game } from './types'
@@ -81,50 +82,64 @@ export default function App() {
   const openGame = games?.find((g) => g.id === openGameId)
 
   return (
-    <main>
-      <h1>Chess Analyzer</h1>
-      <form className="search" onSubmit={handleSubmit}>
-        <input
-          aria-label="chess.com username"
-          placeholder="chess.com username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoFocus
-        />
-        <label>
-          Games
-          <input
-            type="number"
-            min={1}
-            max={200}
-            value={limit}
-            onChange={(e) => setLimit(Math.max(1, Number(e.target.value) || DEFAULT_LIMIT))}
+    <>
+      <header className="topbar">
+        <div className="topbar-inner">
+          <h1>chess-anlzr</h1>
+          <form className="search" onSubmit={handleSubmit}>
+            <input
+              aria-label="chess.com username"
+              placeholder="chess.com username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoFocus
+            />
+            <label>
+              Games
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={limit}
+                onChange={(e) => setLimit(Math.max(1, Number(e.target.value) || DEFAULT_LIMIT))}
+              />
+            </label>
+            <button type="submit" disabled={loading || !username.trim()}>
+              {loading ? 'Loading…' : 'Load games'}
+            </button>
+          </form>
+          {games && !openGame && (
+            <nav className="topnav">
+              <a href="#summary">summary</a>
+              <a href="#games">games</a>
+            </nav>
+          )}
+          <ThemeToggle />
+        </div>
+      </header>
+      <main>
+        {status && <p className="status">{status}</p>}
+        {error && <p className="error">{error}</p>}
+        {games && <AnalysisPanel queue={queue} state={queueState} />}
+        {games && openGame && (
+          <GameDetail
+            game={openGame}
+            analyzed={queueState.analyzed.has(openGame.id)}
+            usualAccuracy={summary.accuracy}
+            onBack={() => setOpenGameId(null)}
           />
-        </label>
-        <button type="submit" disabled={loading || !username.trim()}>
-          {loading ? 'Loading…' : 'Load games'}
-        </button>
-      </form>
-
-      {status && <p className="status">{status}</p>}
-      {error && <p className="error">{error}</p>}
-      {games && <AnalysisPanel queue={queue} state={queueState} />}
-      {games && openGame && (
-        <GameDetail
-          game={openGame}
-          analyzed={queueState.analyzed.has(openGame.id)}
-          usualAccuracy={summary.accuracy}
-          onBack={() => setOpenGameId(null)}
-        />
-      )}
-      {games && !openGame && <SummaryView summary={summary} totalGames={games.length} />}
-      {games && !openGame && <GameList
-          games={games}
-          analysis={queueState}
-          accuracies={accuracies}
-          usualAccuracy={summary.accuracy}
-          onOpen={setOpenGameId}
-        />}
-    </main>
+        )}
+        {games && !openGame && <SummaryView summary={summary} totalGames={games.length} />}
+        {games && !openGame && (
+          <GameList
+            games={games}
+            analysis={queueState}
+            accuracies={accuracies}
+            usualAccuracy={summary.accuracy}
+            onOpen={setOpenGameId}
+          />
+        )}
+      </main>
+    </>
   )
 }

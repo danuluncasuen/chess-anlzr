@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chess Analyzer</title>
+    <script>
+      // Apply a saved cream theme before first paint (night is the CSS default). See src/theme.ts.
+      try {
+        if (localStorage.getItem('chess-anlzr:theme') === 'cream') document.documentElement.dataset.theme = 'cream'
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

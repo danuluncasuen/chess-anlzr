@@ -41,7 +41,10 @@ src/
   components/GameDetail.tsx     Per-game view: error counts, eval graph, biggest mistakes, all moves
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
-  App.tsx                  Username form + list
+  components/ThemeToggle.tsx    Night/cream theme switch in the top bar
+  theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
+  index.css                Color tokens for both themes (#212121 charcoal / #ffe2bd cream) + styles
+  App.tsx                  Sticky top bar (username form, section links) + views
 scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (runs before dev/build)
 ```
 

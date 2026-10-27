@@ -25,7 +25,7 @@ export function SummaryView({ summary, totalGames }: Props) {
       : summary.byPhase
 
   return (
-    <section className="summary">
+    <section className="summary" id="summary">
       <h2>Where you lose points</h2>
       <p className="muted">
         Based on {overall.games} of {totalGames} games ({overall.moves} of your moves). A point is one
