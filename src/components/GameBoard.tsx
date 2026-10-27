@@ -1,6 +1,6 @@
-import { useState, type CSSProperties, type KeyboardEvent } from 'react'
+import type { CSSProperties, KeyboardEvent } from 'react'
 import { Chessboard } from 'react-chessboard'
-import { moveLabel, type MoveAnalysis, type MoveClass } from '../analysis/classify'
+import { hasBetterMove, moveLabel, type MoveAnalysis, type MoveClass } from '../analysis/classify'
 import type { Color } from '../types'
 
 // Board colors match the app icon; they stay the same in both themes, like a real board.
@@ -22,15 +22,16 @@ interface Props {
   selected: number | null
   onSelect: (ply: number | null) => void
   orientation: Color
+  /** Show the position before the selected move, with arrows for it and the engine's choice. */
+  showBest: boolean
+  onToggleBest: () => void
 }
 
 /** The position after the selected move, with step controls and the engine's better move on request. */
-export function GameBoard({ moves, selected, onSelect, orientation }: Props) {
+export function GameBoard({ moves, selected, onSelect, orientation, showBest: showBestProp, onToggleBest }: Props) {
   const move = selected ? moves[selected - 1] : undefined
-  // Which ply the "best move" view is open for; selecting another move closes it.
-  const [bestShownFor, setBestShownFor] = useState<number | null>(null)
-  const canShowBest = !!move && move.class !== 'best' && !!move.bestMoveUci
-  const showBest = canShowBest && bestShownFor === selected
+  const canShowBest = hasBetterMove(move)
+  const showBest = canShowBest && showBestProp
 
   const last = moves.length
   const step = (ply: number) => onSelect(ply <= 0 ? null : Math.min(ply, last))
@@ -90,12 +91,12 @@ export function GameBoard({ moves, selected, onSelect, orientation }: Props) {
         <button type="button" onClick={() => step(last)} disabled={current === last} aria-label="Last move">
           ⏭
         </button>
-        {canShowBest && (
+        {move && canShowBest && (
           <button
             type="button"
             className={showBest ? 'best-toggle active' : 'best-toggle'}
             aria-pressed={showBest}
-            onClick={() => setBestShownFor(showBest ? null : selected)}
+            onClick={onToggleBest}
           >
             {showBest ? 'Hide best move' : `Best: ${move.bestMoveSan ?? move.bestMoveUci}`}
           </button>

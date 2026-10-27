@@ -55,6 +55,9 @@ src/
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
   components/GameBoard.tsx      Board for the selected move (react-chessboard): step controls, best-move arrows
+  components/MoveCard.tsx       Selected move: rating, winning-chances bar, eval change, "show best move"
+  components/MoveList.tsx       Two-column move list with ?!/?/?? marks; fills the space beside the board
+  components/ClassBadge.tsx     Move rating label with its colored dot
   components/Intro.tsx          Start-page description, shown before any games are loaded
   components/ThemeToggle.tsx    Night/cream theme switch in the top bar
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)

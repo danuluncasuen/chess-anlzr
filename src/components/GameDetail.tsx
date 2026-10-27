@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
+  CLASS_LABEL,
   CLASS_SYMBOL,
   classifyGame,
+  hasBetterMove,
   formatScore,
   moveLabel,
   type MoveAnalysis,
@@ -12,17 +14,13 @@ import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
 import { EvalGraph } from './EvalGraph'
+import { ClassBadge } from './ClassBadge'
 import { GameBoard } from './GameBoard'
+import { MoveCard } from './MoveCard'
+import { MoveList } from './MoveList'
 
 const MAX_MISTAKES = 10
 const ERROR_CLASSES: MoveClass[] = ['inaccuracy', 'mistake', 'blunder']
-const CLASS_LABEL: Record<MoveClass, string> = {
-  best: 'Best',
-  ok: 'OK',
-  inaccuracy: 'Inaccuracy',
-  mistake: 'Mistake',
-  blunder: 'Blunder',
-}
 
 interface Props {
   game: Game
@@ -61,6 +59,10 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
     .sort((a, b) => b.winProbLoss - a.winProbLoss)
     .slice(0, MAX_MISTAKES)
   const selectedMove = selected ? moves?.[selected - 1] : undefined
+  // Which ply the "best move" view is open for; selecting another move closes it.
+  const [bestShownFor, setBestShownFor] = useState<number | null>(null)
+  const showBest = hasBetterMove(selectedMove) && bestShownFor === selected
+  const toggleBest = () => setBestShownFor(showBest ? null : selected)
 
   /** Selects a move from the lists below the board, scrolling the board into view when stacked (phones). */
   function showOnBoard(ply: number) {
@@ -96,14 +98,18 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
           <ErrorCounts moves={moves} myColor={game.myColor} opponentColor={opponentColor} />
 
           <div className="board-and-graph">
-            <GameBoard moves={moves} selected={selected} onSelect={setSelected} orientation={game.myColor} />
+            <GameBoard
+              moves={moves}
+              selected={selected}
+              onSelect={setSelected}
+              orientation={game.myColor}
+              showBest={showBest}
+              onToggleBest={toggleBest}
+            />
             <div className="graph-column">
               <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
-              <p className="selected-move" aria-live="polite">
-                {selectedMove
-                  ? describeSelected(selectedMove, game.myColor)
-                  : 'Select a point on the graph, or a mistake below, to see it on the board.'}
-              </p>
+              <MoveCard move={selectedMove} myColor={game.myColor} showBest={showBest} onToggleBest={toggleBest} />
+              <MoveList moves={moves} selected={selected} onSelect={setSelected} />
             </div>
           </div>
 
@@ -284,23 +290,6 @@ function ErrorCounts({
       </table>
     </div>
   )
-}
-
-function ClassBadge({ cls }: { cls: MoveClass }) {
-  return (
-    <span className="class-badge">
-      <span className={`dot dot-${cls}`} aria-hidden="true" />
-      {CLASS_LABEL[cls]}
-    </span>
-  )
-}
-
-function describeSelected(m: MoveAnalysis, myColor: string): string {
-  const who = m.color === myColor ? 'You' : 'Opponent'
-  const parts = [`${who}: ${moveLabel(m)} (${CLASS_LABEL[m.class].toLowerCase()})`]
-  parts.push(`eval ${formatScore(m.evalBefore)} → ${formatScore(m.evalAfter)}`)
-  if (m.class !== 'best' && m.bestMoveSan) parts.push(`best was ${m.bestMoveSan}`)
-  return parts.join(' · ')
 }
 
 function pct(p: number): string {
