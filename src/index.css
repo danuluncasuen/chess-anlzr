@@ -716,6 +716,12 @@ tr.openable {
   font-size: 13px;
 }
 
+.move-why {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .move-card-foot {
   margin-top: 6px;
   align-items: center;

@@ -35,6 +35,8 @@ function move(color: 'white' | 'black', loss: number, extra: Partial<MoveAnalysi
     fenAfter: '',
     bestMoveUci: null,
     bestMoveSan: null,
+    replyUci: null,
+    replySan: null,
     evalBefore: { type: 'cp', value: 0 },
     evalAfter: { type: 'cp', value: 0 },
     winProbBefore: 0.5,

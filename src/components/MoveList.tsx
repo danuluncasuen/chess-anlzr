@@ -12,18 +12,24 @@ interface Props {
 export function MoveList({ moves, selected, onSelect }: Props) {
   const listRef = useRef<HTMLDivElement>(null)
 
-  // Keep the selected move visible by scrolling the list itself (never the page).
+  // Keep the selected move visible by scrolling the list itself (never the page): when the selection
+  // changes, and when the list resizes (it shrinks as the move card above it grows).
   useEffect(() => {
     const list = listRef.current
-    const cell = list?.querySelector<HTMLElement>('[aria-current="true"]')
-    if (!list || !cell) {
-      if (list && selected === null) list.scrollTop = 0
-      return
+    if (!list) return
+    const reveal = () => {
+      const cell = list.querySelector<HTMLElement>('[aria-current="true"]')
+      if (!cell) return
+      const top = cell.offsetTop
+      const bottom = top + cell.offsetHeight
+      if (top < list.scrollTop) list.scrollTop = top - 4
+      else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight + 4
     }
-    const top = cell.offsetTop
-    const bottom = top + cell.offsetHeight
-    if (top < list.scrollTop) list.scrollTop = top - 4
-    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight + 4
+    if (selected === null) list.scrollTop = 0
+    else reveal()
+    const observer = new ResizeObserver(reveal)
+    observer.observe(list)
+    return () => observer.disconnect()
   }, [selected])
 
   // One tab stop for the whole list; arrow keys move between moves (like the board).

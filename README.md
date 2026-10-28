@@ -41,6 +41,8 @@ src/
   analysis/queue.ts        Background queue: one game at a time, pause/resume, saves to IndexedDB
   analysis/classify.ts     Win-probability loss per move -> best/ok/inaccuracy/mistake/blunder
   analysis/accuracy.ts     Lichess accuracy: per move from win% drop, per game volatility-weighted + harmonic mean
+  analysis/explain.ts      Plain-language "why" for an error: mate allowed/missed, the punishing reply and
+                           whether it was played, what it takes (and if undefended), what the best move does
   analysis/rating.ts       Rough rating estimate from accuracy (calibrated anchor points)
   analysis/summary.ts      Points lost by phase / color / time control / rook endgames, plus insights
   analysis/useClassifiedGames.ts  Loads + classifies analyzed games for the summary (cached per game)
@@ -55,7 +57,7 @@ src/
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
   components/GameBoard.tsx      Board for the selected move (react-chessboard): step controls, best-move arrows
-  components/MoveCard.tsx       Selected move: rating, winning-chances bar, eval change, "show best move"
+  components/MoveCard.tsx       Selected move: rating, winning-chances bar, why it was an error, "show best move"
   components/MoveList.tsx       Two-column move list with ?!/?/?? marks; fills the space beside the board
   components/ClassBadge.tsx     Move rating label with its colored dot
   components/Intro.tsx          Start-page description, shown before any games are loaded

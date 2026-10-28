@@ -108,7 +108,13 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
             />
             <div className="graph-column">
               <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
-              <MoveCard move={selectedMove} myColor={game.myColor} showBest={showBest} onToggleBest={toggleBest} />
+              <MoveCard
+                move={selectedMove}
+                next={selected ? moves[selected] : undefined}
+                myColor={game.myColor}
+                showBest={showBest}
+                onToggleBest={toggleBest}
+              />
               <MoveList moves={moves} selected={selected} onSelect={setSelected} />
             </div>
           </div>
