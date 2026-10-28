@@ -1,16 +1,19 @@
 import { formatScore, hasBetterMove, moveLabel, type MoveAnalysis } from '../analysis/classify'
+import { explainMove } from '../analysis/explain'
 import type { Color } from '../types'
 import { ClassBadge } from './ClassBadge'
 
 interface Props {
   move: MoveAnalysis | undefined
+  /** The move played after it, to tell whether the punishing reply was found. */
+  next: MoveAnalysis | undefined
   myColor: Color
   showBest: boolean
   onToggleBest: () => void
 }
 
 /** What happened on the selected move: its rating, the change in winning chances and the engine's choice. */
-export function MoveCard({ move, myColor, showBest, onToggleBest }: Props) {
+export function MoveCard({ move, next, myColor, showBest, onToggleBest }: Props) {
   if (!move) {
     return (
       <div className="move-card muted">
@@ -23,6 +26,7 @@ export function MoveCard({ move, myColor, showBest, onToggleBest }: Props) {
   const before = Math.round(move.winProbBefore * 100)
   const after = Math.round(move.winProbAfter * 100)
   const phase = move.tags.includes('rook-endgame') ? 'rook endgame' : move.phase
+  const why = explainMove(move, next, myColor)
 
   return (
     <div className="move-card" aria-live="polite">
@@ -52,6 +56,8 @@ export function MoveCard({ move, myColor, showBest, onToggleBest }: Props) {
           {before}% → {after}%
         </span>
       </div>
+
+      {why.length > 0 && <p className="move-why">{why.join(' ')}</p>}
 
       <div className="move-card-foot">
         <span className="muted">

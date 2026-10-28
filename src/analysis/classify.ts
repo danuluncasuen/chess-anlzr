@@ -26,6 +26,9 @@ export interface MoveAnalysis {
   /** Engine's preferred move in the position before this move, as UCI and as SAN. */
   bestMoveUci: string | null
   bestMoveSan: string | null
+  /** Engine's preferred answer to this move (in the position after it), as UCI and as SAN. */
+  replyUci: string | null
+  replySan: string | null
   /** White's point of view, before and after the move. */
   evalBefore: Score
   evalAfter: Score
@@ -99,6 +102,8 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
       fenAfter: positions[i + 1]!,
       bestMoveUci: before.bestMove,
       bestMoveSan: before.bestMove ? uciToSan(positions[i]!, before.bestMove) : null,
+      replyUci: after.bestMove,
+      replySan: after.bestMove ? uciToSan(positions[i + 1]!, after.bestMove) : null,
       evalBefore: before.score,
       evalAfter: after.score,
       winProbBefore,
