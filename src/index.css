@@ -716,6 +716,27 @@ tr.openable {
   font-size: 13px;
 }
 
+/* Your own line: a blue edge, like the blue squares of your moves on the board. */
+.explorer-card {
+  border-color: rgba(80, 150, 255, 0.7);
+}
+
+.move-card-head .explorer-exit {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+}
+
+.explorer-line {
+  margin: 6px 0 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.explorer-thinking {
+  margin: 8px 0 0;
+}
+
 .move-why {
   margin: 8px 0 0;
   font-size: 14px;

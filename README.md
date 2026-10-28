@@ -41,6 +41,7 @@ src/
   analysis/queue.ts        Background queue: one game at a time, pause/resume, saves to IndexedDB
   analysis/classify.ts     Win-probability loss per move -> best/ok/inaccuracy/mistake/blunder
   analysis/accuracy.ts     Lichess accuracy: per move from win% drop, per game volatility-weighted + harmonic mean
+  analysis/usePositionEval.ts  On-demand engine eval for positions you try (its own engine, separate from the queue)
   analysis/explain.ts      Plain-language "why" for an error: mate allowed/missed, the punishing reply and
                            whether it was played, what it takes (and if undefended), what the best move does
   analysis/rating.ts       Rough rating estimate from accuracy (calibrated anchor points)
@@ -57,6 +58,7 @@ src/
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
   components/EvalGraph.tsx      SVG graph of the player's winning chances (hover, click, arrow keys)
   components/GameBoard.tsx      Board for the selected move (react-chessboard): step controls, best-move arrows
+  components/ExplorerCard.tsx   Your own line (moves tried on the board): winning chances vs the game, engine's next move
   components/MoveCard.tsx       Selected move: rating, winning-chances bar, why it was an error, "show best move"
   components/MoveList.tsx       Two-column move list with ?!/?/?? marks; fills the space beside the board
   components/ClassBadge.tsx     Move rating label with its colored dot
@@ -91,6 +93,9 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
 - **Board:** `react-chessboard` (MIT). Shows the position after the selected move with its squares tinted by
   rating; "Best: …" switches to the position before it, with arrows for the move played and Stockfish's choice.
   Board colors are fixed (cream/brown, like the icon) in both themes.
+  Pieces can be dragged (or tapped, then a target tapped) to try a line from the shown position; legal moves
+  only (`src/chess/variation.ts`), pawns always promote to a queen. A second Stockfish evaluates each position
+  of the line at the same depth as the game analysis. Selecting any game move leaves the line.
 - **Classification:** a move's loss is the drop in the mover's winning chances (Lichess formula, evals capped at
   ±10 pawns). Thresholds 5 / 10 / 15 points = inaccuracy / mistake / blunder, in `THRESHOLDS` in classify.ts.
   Playing the engine's best move always counts as "best".

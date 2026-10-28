@@ -13,7 +13,10 @@ import { gameAccuracy } from '../analysis/accuracy'
 import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
+import { usePositionEval } from '../analysis/usePositionEval'
+import { shownGameFen, tryMove, type VariationMove } from '../chess/variation'
 import { EvalGraph } from './EvalGraph'
+import { ExplorerCard } from './ExplorerCard'
 import { ClassBadge } from './ClassBadge'
 import { GameBoard } from './GameBoard'
 import { MoveCard } from './MoveCard'
@@ -64,9 +67,23 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
   const showBest = hasBetterMove(selectedMove) && bestShownFor === selected
   const toggleBest = () => setBestShownFor(showBest ? null : selected)
 
+  // The player's own line from the shown position. Selecting any game move leaves it.
+  const [variation, setVariation] = useState<VariationMove[]>([])
+  const { evaluation, error: evalError } = usePositionEval(variation.at(-1)?.fen ?? null)
+  const selectMove = (ply: number | null) => {
+    setVariation([])
+    setSelected(ply)
+  }
+  const tryOnBoard = (from: string, to: string) => {
+    const start = variation.at(-1)?.fen ?? shownGameFen(moves ?? [], selected, showBest)
+    const move = tryMove(start, from, to)
+    if (move) setVariation([...variation, move])
+    return move !== null
+  }
+
   /** Selects a move from the lists below the board, scrolling the board into view when stacked (phones). */
   function showOnBoard(ply: number) {
-    setSelected(ply)
+    selectMove(ply)
     const board = document.querySelector('.game-board')
     if (board && board.getBoundingClientRect().top < 0) board.scrollIntoView({ behavior: 'smooth' })
   }
@@ -101,21 +118,48 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
             <GameBoard
               moves={moves}
               selected={selected}
-              onSelect={setSelected}
+              onSelect={selectMove}
               orientation={game.myColor}
               showBest={showBest}
               onToggleBest={toggleBest}
+              variation={variation}
+              variationBest={evaluation?.bestMove ?? null}
+              onTry={tryOnBoard}
+              onUndo={() => setVariation(variation.slice(0, -1))}
+              onExit={() => setVariation([])}
             />
             <div className="graph-column">
-              <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={setSelected} />
-              <MoveCard
-                move={selectedMove}
-                next={selected ? moves[selected] : undefined}
-                myColor={game.myColor}
-                showBest={showBest}
-                onToggleBest={toggleBest}
-              />
-              <MoveList moves={moves} selected={selected} onSelect={setSelected} />
+              <EvalGraph moves={moves} myColor={game.myColor} selected={selected} onSelect={selectMove} />
+              {variation.length > 0 ? (
+                <ExplorerCard
+                  variation={variation}
+                  startLabel={
+                    !selectedMove
+                      ? 'the starting position'
+                      : `${showBest ? 'before' : 'after'} ${moveLabel(selectedMove)}`
+                  }
+                  gameScore={
+                    !selectedMove
+                      ? moves[0]!.evalBefore
+                      : showBest
+                        ? selectedMove.evalBefore
+                        : selectedMove.evalAfter
+                  }
+                  evaluation={evaluation}
+                  error={evalError}
+                  myColor={game.myColor}
+                  onExit={() => setVariation([])}
+                />
+              ) : (
+                <MoveCard
+                  move={selectedMove}
+                  next={selected ? moves[selected] : undefined}
+                  myColor={game.myColor}
+                  showBest={showBest}
+                  onToggleBest={toggleBest}
+                />
+              )}
+              <MoveList moves={moves} selected={selected} onSelect={selectMove} />
             </div>
           </div>
 
