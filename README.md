@@ -26,6 +26,12 @@ npm run serve:lan  # build, then serve on the home network at http://<mac-ip>:41
 Analyses are stored per device and per address, so the phone analyzes its games itself (slower than a
 laptop). It serves the production build rather than the dev server, which shouldn't be exposed to a network.
 
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `master`: `npm ci`, typecheck, lint,
+tests, build (about a minute). Node version comes from `.nvmrc`. To make it required, add a branch protection
+rule for `master` in the GitHub repo settings (Settings → Branches) that requires the `check` job to pass.
+
 ## Layout
 
 ```
@@ -67,6 +73,7 @@ src/
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
   theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
   index.css                Color tokens for both themes (#212121 charcoal / #ffe2bd cream) + styles
+  components/Footer.tsx         License/source notices and the chess.com disclaimer
   App.tsx                  Sticky top bar (logo back to start, username form, section links) + views
 scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (runs before dev/build)
 ```
@@ -78,8 +85,12 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
 - **Cache:** completed months are cached indefinitely, the current month for 10 minutes and the archive list for 1 hour.
 - **Engine:** Stockfish 19 lite single-threaded (~1.8 MB), depth 12. About 5 s per game in Chrome on a laptop.
   Analyses store the engine id and depth; games are re-analyzed automatically if either changes.
-- **License:** Stockfish is GPL-3.0. Shipping it means offering its source and license text; check what that
-  means for the app's own code before going commercial.
+- **License:** chess-anlzr is GPL-3.0-or-later ([LICENSE](LICENSE)), matching Stockfish (GPL-3.0), which the
+  site distributes. The build copies Stockfish's license to `engine/COPYING.txt` next to the engine, and the page
+  footer links it, Stockfish's source and this repo. Keep the repo public. A paid hosted service (accounts,
+  server features) stays possible under the GPL; closing the app's own code would not be.
+- **chess.com:** the footer says the app isn't affiliated with chess.com. Read chess.com's API/data terms
+  before any commercial use (see mvp.md).
 - **Phases:** opening = first 12 moves; endgame = 6 or fewer knights/bishops/rooks/queens left in total
   (replaces the spec's "queens off" rule, which put early queen trades into the endgame); otherwise middlegame.
   Rook endgame = only kings, rooks and pawns left. Constants in `src/chess/phase.ts`.
