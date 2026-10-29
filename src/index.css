@@ -644,6 +644,24 @@ tr.muted td {
   color: var(--loss);
 }
 
+.site-footer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.site-footer p {
+  margin: 0 0 4px;
+}
+
+.site-footer a {
+  color: var(--muted);
+}
+
 tr.openable {
   cursor: pointer;
 }

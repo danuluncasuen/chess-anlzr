@@ -4,6 +4,7 @@ import { accuracyOf, summarize } from './analysis/summary'
 import { useClassifiedGames } from './analysis/useClassifiedGames'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { GameDetail } from './components/GameDetail'
+import { Footer } from './components/Footer'
 import { GameList } from './components/GameList'
 import { Intro } from './components/Intro'
 import { SummaryView } from './components/SummaryView'
@@ -192,6 +193,7 @@ export default function App() {
           />
         )}
       </main>
+      <Footer />
     </>
   )
 }

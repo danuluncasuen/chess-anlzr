@@ -1,5 +1,6 @@
 // Copies the Stockfish lite single-threaded build from node_modules into public/engine/,
-// so only these two files (~1.8 MB) get served instead of the whole 200 MB package.
+// so only these two files (~1.8 MB) get served instead of the whole 200 MB package,
+// plus Stockfish's license (GPL-3.0), which has to ship with it (linked from the page footer).
 // Runs automatically before `npm run dev` and `npm run build`.
 import { copyFileSync, mkdirSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -16,4 +17,5 @@ for (const ext of ['js', 'wasm']) {
   // The .js loads the .wasm with the same base name, so both get the same new name.
   copyFileSync(join(src, file), join(dest, `stockfish-lite-single.${ext}`))
 }
-console.log('Copied Stockfish engine to public/engine/')
+copyFileSync(join(root, 'node_modules/stockfish/Copying.txt'), join(dest, 'COPYING.txt'))
+console.log('Copied Stockfish engine and license to public/engine/')
