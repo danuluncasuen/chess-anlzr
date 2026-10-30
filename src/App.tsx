@@ -46,6 +46,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const listScrollRef = useRef(0)
+  const usernameRef = useRef<HTMLInputElement>(null)
 
   // Opening a game adds a history entry, so the phone's back gesture (or the browser's
   // back button) returns to the list at the same scroll position.
@@ -135,6 +136,7 @@ export default function App() {
           </h1>
           <form className="search" onSubmit={handleSubmit}>
             <input
+              ref={usernameRef}
               aria-label="chess.com username"
               placeholder="chess.com username"
               value={username}
@@ -172,7 +174,7 @@ export default function App() {
       <main>
         {status && <p className="status">{status}</p>}
         {error && <p className="error">{error}</p>}
-        {!games && <Intro />}
+        {!games && <Intro onStart={() => usernameRef.current?.focus()} />}
         {games && <AnalysisPanel queue={queue} state={queueState} />}
         {games && openGame && (
           <GameDetail

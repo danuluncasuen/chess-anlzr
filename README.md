@@ -68,7 +68,7 @@ src/
   components/MoveCard.tsx       Selected move: rating, winning-chances bar, why it was an error, "show best move"
   components/MoveList.tsx       Two-column move list with ?!/?/?? marks; fills the space beside the board
   components/ClassBadge.tsx     Move rating label with its colored dot
-  components/Intro.tsx          Start-page description, shown before any games are loaded
+  components/Intro.tsx          Start page as a newspaper front page (masthead, lead story, Fig. 1 board, columns)
   components/ThemeToggle.tsx    Night/cream theme switch in the top bar
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
   theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
