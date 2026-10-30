@@ -1,5 +1,5 @@
 // Moves the player tries out on the board, away from the game ("what if I had played...").
-import { Chess, type Square } from 'chess.js'
+import { Chess, type PieceSymbol, type Square } from 'chess.js'
 import type { Color } from '../types'
 
 export interface VariationMove {
@@ -9,6 +9,7 @@ export interface VariationMove {
   fen: string
   moveNumber: number
   color: Color
+  captured: PieceSymbol | null
 }
 
 /**
@@ -21,7 +22,14 @@ export function tryMove(fen: string, from: string, to: string): VariationMove | 
   const color: Color = chess.turn() === 'w' ? 'white' : 'black'
   try {
     const move = chess.move({ from, to, promotion: 'q' })
-    return { san: move.san, uci: move.from + move.to + (move.promotion ?? ''), fen: chess.fen(), moveNumber, color }
+    return {
+      san: move.san,
+      uci: move.from + move.to + (move.promotion ?? ''),
+      fen: chess.fen(),
+      moveNumber,
+      color,
+      captured: move.captured ?? null,
+    }
   } catch {
     return null
   }

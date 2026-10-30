@@ -35,9 +35,16 @@ describe('pgnToPositions', () => {
   })
 
   it('numbers and colors the moves', () => {
-    expect(moves[0]).toEqual({ ply: 1, moveNumber: 1, color: 'white', san: 'e4', uci: 'e2e4' })
-    expect(moves[1]).toEqual({ ply: 2, moveNumber: 1, color: 'black', san: 'e5', uci: 'e7e5' })
-    expect(moves[32]).toEqual({ ply: 33, moveNumber: 17, color: 'white', san: 'Rd8#', uci: 'd1d8' })
+    expect(moves[0]).toEqual({ ply: 1, moveNumber: 1, color: 'white', san: 'e4', uci: 'e2e4', captured: null })
+    expect(moves[1]).toEqual({ ply: 2, moveNumber: 1, color: 'black', san: 'e5', uci: 'e7e5', captured: null })
+    expect(moves[32]).toEqual({ ply: 33, moveNumber: 17, color: 'white', san: 'Rd8#', uci: 'd1d8', captured: null })
+  })
+
+  it('records captured pieces', () => {
+    // 4. dxe5 takes a pawn, 4... Bxf3 a knight, 15. Bxd7+ a rook.
+    expect(moves.find((m) => m.san === 'dxe5' && m.color === 'white')?.captured).toBe('p')
+    expect(moves.find((m) => m.san === 'Bxf3')?.captured).toBe('n')
+    expect(moves.find((m) => m.san === 'Bxd7+')?.captured).toBe('r')
   })
 
   it('gives castling in king-move UCI form, like Stockfish', () => {

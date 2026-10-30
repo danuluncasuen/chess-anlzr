@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { hasBetterMove, moveLabel, type MoveAnalysis, type MoveClass } from '../analysis/classify'
+import { capturedBy, materialBalance } from '../chess/material'
 import { formatLine, legalTargets, shownGameFen, turnOf, type VariationMove } from '../chess/variation'
 import type { Color } from '../types'
 import { DARK_SQUARE, LIGHT_SQUARE } from './boardColors'
 import { playImpact } from './impact'
+import { MaterialRow } from './MaterialRow'
 
 const LAST_MOVE_TINT = 'rgba(255, 214, 10, 0.45)'
 /** Square tint and arrow color for the played move, by its rating (same hues as the dots). */
@@ -70,6 +72,20 @@ export function GameBoard({
   const exploring = variation.length > 0
   const fen = exploring ? variation.at(-1)!.fen : shownGameFen(moves, selected, showBest)
   const turn = turnOf(fen)[0] // "w" / "b", as in piece codes like "wN"
+
+  // Captures up to the position on the board (game moves, then the player's own line), and
+  // who's ahead in material there. The opponent's row goes above the board, the player's below.
+  const gamePly = !selected ? 0 : showBest ? selected - 1 : selected
+  const captured = capturedBy([...moves.slice(0, gamePly), ...variation])
+  const whiteLead = materialBalance(fen)
+  const materialRow = (color: Color) => (
+    <MaterialRow
+      color={color}
+      label={color === orientation ? 'You' : 'Opponent'}
+      captured={captured[color]}
+      advantage={color === 'white' ? whiteLead : -whiteLead}
+    />
+  )
 
   // Tap-to-move: the square of the piece picked up, tied to the position it was picked in.
   const [pick, setPick] = useState<{ fen: string; square: string } | null>(null)
@@ -146,6 +162,7 @@ export function GameBoard({
 
   return (
     <div className="game-board">
+      {materialRow(orientation === 'white' ? 'black' : 'white')}
       <div
         ref={frameRef}
         className="board-frame"
@@ -156,6 +173,7 @@ export function GameBoard({
       >
         <Chessboard options={options} />
       </div>
+      {materialRow(orientation)}
 
       {exploring ? (
         <div className="board-controls">
