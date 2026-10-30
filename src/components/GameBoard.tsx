@@ -1,9 +1,10 @@
-import { useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { hasBetterMove, moveLabel, type MoveAnalysis, type MoveClass } from '../analysis/classify'
 import { formatLine, legalTargets, shownGameFen, turnOf, type VariationMove } from '../chess/variation'
 import type { Color } from '../types'
 import { DARK_SQUARE, LIGHT_SQUARE } from './boardColors'
+import { playImpact } from './impact'
 
 const LAST_MOVE_TINT = 'rgba(255, 214, 10, 0.45)'
 /** Square tint and arrow color for the played move, by its rating (same hues as the dots). */
@@ -59,6 +60,11 @@ export function GameBoard({
   onExit,
 }: Props) {
   const move = selected ? moves[selected - 1] : undefined
+
+  // Landing on an error shakes the board, harder for worse moves (see impact.ts).
+  const frameRef = useRef<HTMLDivElement>(null)
+  const moveClass = move?.class
+  useEffect(() => playImpact(frameRef.current, moveClass), [selected, moveClass])
   const canShowBest = hasBetterMove(move)
   const showBest = canShowBest && showBestProp
   const exploring = variation.length > 0
@@ -141,6 +147,7 @@ export function GameBoard({
   return (
     <div className="game-board">
       <div
+        ref={frameRef}
         className="board-frame"
         tabIndex={0}
         role="group"

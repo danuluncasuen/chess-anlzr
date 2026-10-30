@@ -29,7 +29,7 @@ export function MoveCard({ move, next, myColor, showBest, onToggleBest }: Props)
   const why = explainMove(move, next, myColor)
 
   return (
-    <div className="move-card" aria-live="polite">
+    <div className={`move-card move-card-${move.class}`} aria-live="polite">
       <div className="move-card-head">
         <ClassBadge cls={move.class} />
         <strong>{moveLabel(move)}</strong>

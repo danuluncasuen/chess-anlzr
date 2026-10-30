@@ -910,6 +910,18 @@ tr.openable {
   font-size: 14px;
 }
 
+/* The card's border takes the rating's color; a blunder's is thicker. */
+.move-card-inaccuracy {
+  border-color: var(--inaccuracy);
+}
+.move-card-mistake {
+  border-color: var(--mistake);
+}
+.move-card-blunder {
+  border-color: var(--blunder);
+  box-shadow: inset 0 0 0 1px var(--blunder);
+}
+
 .move-card-head {
   display: flex;
   flex-wrap: wrap;
