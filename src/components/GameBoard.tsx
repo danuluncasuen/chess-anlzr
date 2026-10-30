@@ -3,10 +3,8 @@ import { Chessboard } from 'react-chessboard'
 import { hasBetterMove, moveLabel, type MoveAnalysis, type MoveClass } from '../analysis/classify'
 import { formatLine, legalTargets, shownGameFen, turnOf, type VariationMove } from '../chess/variation'
 import type { Color } from '../types'
+import { DARK_SQUARE, LIGHT_SQUARE } from './boardColors'
 
-// Board colors match the app icon; they stay the same in both themes, like a real board.
-const LIGHT_SQUARE: CSSProperties = { backgroundColor: '#ffe2bd' }
-const DARK_SQUARE: CSSProperties = { backgroundColor: '#8b6f4e' }
 const LAST_MOVE_TINT = 'rgba(255, 214, 10, 0.45)'
 /** Square tint and arrow color for the played move, by its rating (same hues as the dots). */
 const CLASS_COLOR: Partial<Record<MoveClass, string>> = {
