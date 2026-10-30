@@ -3,7 +3,7 @@
 import { Chess, type PieceSymbol, type Square } from 'chess.js'
 import type { Score } from '../engine/types'
 import type { Color } from '../types'
-import { hasBetterMove, type MoveAnalysis } from './classify'
+import { formatScore, hasBetterMove, type MoveAnalysis } from './classify'
 
 const PIECE_NAME: Record<PieceSymbol, string> = {
   p: 'pawn',
@@ -75,8 +75,8 @@ function mateFor(score: Score, color: Color): number | null {
 export function explainMove(move: MoveAnalysis, next: MoveAnalysis | undefined, myColor: Color): string[] {
   const mine = move.color === myColor
   const opponent: Color = move.color === 'white' ? 'black' : 'white'
-  // The side answering the move, first as a full name, then as a pronoun.
-  const answerersReply = mine ? 'Your opponent’s' : 'Your'
+  // The side answering the move, as a name and as a pronoun.
+  const answererName = mine ? 'your opponent' : 'you'
   const answerer = mine ? 'they' : 'you'
   const moverPossessive = mine ? 'your' : 'their'
   const sentences: string[] = []
@@ -90,20 +90,26 @@ export function explainMove(move: MoveAnalysis, next: MoveAnalysis | undefined, 
   const explained = EXPLAINED.has(move.class)
   if (!explained && sentences.length === 0) return sentences
 
-  // The punishing reply: the engine's best answer in the position after the move.
+  // The consequence: the engine's best answer in the position after the move. Only worth a
+  // sentence when it does something concrete (mate, capture, check) or the move was a blunder.
   if (move.replyUci && move.replySan && (explained || allowedMate !== null)) {
-    const desc = describe(moveFacts(move.fenAfter, move.replyUci), moverPossessive)
-    const reply =
-      allowedMate !== null && mateFor(move.evalBefore, opponent) === null
-        ? `This allows mate in ${allowedMate}, starting with ${move.replySan}`
-        : `${answerersReply} best answer was ${move.replySan}${desc}`
-    // Whether the answer was actually played (unknown when the game ended right after the move).
-    const outcome = !next
-      ? '.'
-      : next.uci === move.replyUci
-        ? `, and ${answerer} found it.`
-        : `; ${answerer} played ${next.san} instead.`
-    sentences.push(reply + outcome)
+    const facts = moveFacts(move.fenAfter, move.replyUci)
+    const forcesMate = allowedMate !== null && mateFor(move.evalBefore, opponent) === null
+    const concrete = !!facts && (!!facts.captured || facts.check || facts.mate)
+    if (forcesMate || concrete || move.class === 'blunder') {
+      const consequence = forcesMate
+        ? `This let ${answererName} force mate in ${allowedMate}, starting with ${move.replySan}`
+        : concrete
+          ? `This let ${answererName} play ${move.replySan}${describe(facts, moverPossessive)}`
+          : `This let ${answererName} play ${move.replySan}, swinging the evaluation to ${formatScore(move.evalAfter)}`
+      // Whether the answer was actually played (unknown when the game ended right after the move).
+      const outcome = !next
+        ? ''
+        : next.uci === move.replyUci
+          ? ` (${answerer} found it)`
+          : ` (${answerer} missed it and played ${next.san})`
+      sentences.push(`${consequence}${outcome}.`)
+    }
   }
 
   // What the engine wanted instead (a missed mate is already covered above).

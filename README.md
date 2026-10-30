@@ -66,6 +66,7 @@ src/
   components/GameBoard.tsx      Board for the selected move (react-chessboard): step controls, best-move arrows
   components/ExplorerCard.tsx   Your own line (moves tried on the board): winning chances vs the game, engine's next move
   components/MoveCard.tsx       Selected move: rating, winning-chances bar, why it was an error, "show best move"
+  components/impact.ts          Board shake + colored ring when landing on an error (stronger for worse moves)
   components/MoveList.tsx       Two-column move list with ?!/?/?? marks; fills the space beside the board
   components/ClassBadge.tsx     Move rating label with its colored dot
   components/Intro.tsx          Start page as a newspaper front page (masthead, lead story, Fig. 1 board, columns)

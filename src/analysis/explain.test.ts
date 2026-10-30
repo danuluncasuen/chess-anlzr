@@ -38,23 +38,21 @@ describe('explainMove', () => {
 
   it('names the mate a blunder allows, whether it was found, and the better move', () => {
     expect(explain(scholar, scholarPlies, 5, 'black')).toEqual([
-      'This allows mate in 1, starting with Qxf7#, and they found it.',
+      'This let your opponent force mate in 1, starting with Qxf7# (they found it).',
       'Best was g6.',
     ])
   })
 
   it('speaks from the player’s side for the opponent’s moves', () => {
     expect(explain(scholar, scholarPlies, 5, 'white')).toEqual([
-      'This allows mate in 1, starting with Qxf7#, and you found it.',
+      'This let you force mate in 1, starting with Qxf7# (you found it).',
       'Best was g6.',
     ])
   })
 
-  it('gives the strongest answer to an inaccuracy', () => {
-    expect(explain(scholar, scholarPlies, 2, 'white')).toEqual([
-      'Your opponent’s best answer was Nc6, and they found it.',
-      'Best was Nf3.',
-    ])
+  it('skips an ordinary reply to an inaccuracy, giving only the better move', () => {
+    // The best answer to 2. Qh5 was the quiet 2... Nc6: nothing worth a sentence.
+    expect(explain(scholar, scholarPlies, 2, 'white')).toEqual(['Best was Nf3.'])
   })
 
   it('says nothing about good moves', () => {
@@ -71,7 +69,7 @@ describe('explainMove', () => {
       ev(cp(-300), 'g1f3'),
     ]
     expect(explain(pgn, plies, 2, 'white')).toEqual([
-      'Your opponent’s best answer was bxa6, taking your undefended bishop, and they found it.',
+      'This let your opponent play bxa6, taking your undefended bishop (they found it).',
       'Best was Nf3.',
     ])
   })
@@ -86,7 +84,22 @@ describe('explainMove', () => {
       ev(cp(-20), 'a6b5'),
     ]
     expect(explain(pgn, plies, 2, 'white')).toEqual([
-      'Your opponent’s best answer was bxa6, taking your undefended bishop; they played Nc6 instead.',
+      'This let your opponent play bxa6, taking your undefended bishop (they missed it and played Nc6).',
+      'Best was Nf3.',
+    ])
+  })
+
+  it('gives the evaluation swing when a blunder’s punishment is a quiet move', () => {
+    const pgn = '1. e4 e5 2. Ba6 bxa6 *'
+    const plies = [
+      ev(cp(30), 'e2e4'),
+      ev(cp(30), 'e7e5'),
+      ev(cp(30), 'g1f3'),
+      ev(cp(-300), 'g8f6'),
+      ev(cp(-300), 'g1f3'),
+    ]
+    expect(explain(pgn, plies, 2, 'white')).toEqual([
+      'This let your opponent play Nf6, swinging the evaluation to -3.0 (they missed it and played bxa6).',
       'Best was Nf3.',
     ])
   })
@@ -96,7 +109,7 @@ describe('explainMove', () => {
     const plies = [...scholarPlies.slice(0, 7), ev(cp(-200), 'f6h5')]
     expect(explain(pgn, plies, 6, 'white')).toEqual([
       'Qxf7# was mate in 1.',
-      'Your opponent’s best answer was Nxh5, taking your undefended queen.',
+      'This let your opponent play Nxh5, taking your undefended queen.',
     ])
   })
 })
