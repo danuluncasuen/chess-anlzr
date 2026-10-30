@@ -1,4 +1,5 @@
 import { phaseOf, tagsOf, type MoveTag, type Phase } from '../chess/phase'
+import type { PieceSymbol } from 'chess.js'
 import { pgnToPositions, uciToSan } from '../chess/positions'
 import type { Score } from '../engine/types'
 import type { Analysis, Color } from '../types'
@@ -20,6 +21,8 @@ export interface MoveAnalysis {
   color: Color
   san: string
   uci: string
+  /** The piece this move captured, or null. */
+  captured: PieceSymbol | null
   /** FEN of the position before and after this move (for drawing the board). */
   fenBefore: string
   fenAfter: string

@@ -1,4 +1,4 @@
-import { Chess } from 'chess.js'
+import { Chess, type PieceSymbol } from 'chess.js'
 import type { Color } from '../types'
 
 export interface PlyMove {
@@ -10,6 +10,8 @@ export interface PlyMove {
   san: string
   /** Long algebraic, e.g. "e2e4" or "e7e8q". Same format as Stockfish's best moves. */
   uci: string
+  /** The piece this move captured (en passant included), or null. */
+  captured: PieceSymbol | null
 }
 
 export interface GamePositions {
@@ -49,6 +51,7 @@ export function pgnToPositions(pgn: string): GamePositions {
     color: m.color === 'w' ? 'white' : 'black',
     san: m.san,
     uci: m.lan,
+    captured: m.captured ?? null,
   }))
 
   return { positions, moves }

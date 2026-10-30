@@ -1076,6 +1076,49 @@ tr.openable {
   overflow: hidden;
 }
 
+/* Captured pieces and material lead, above (opponent) and below (you) the board. */
+.material-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  font-size: 13px;
+}
+
+.material-label {
+  color: var(--muted);
+  min-width: 64px;
+}
+
+/* On a cream chip like a light square, so black pieces stay visible in the night theme. */
+.captured {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #ffe2bd;
+}
+
+.captured-piece {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-left: -7px;
+}
+
+.captured-piece:first-child {
+  margin-left: 0;
+}
+
+.captured-piece.new-type {
+  margin-left: 2px;
+}
+
+.material-advantage {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .board-controls {
   display: flex;
   flex-wrap: wrap;

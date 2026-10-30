@@ -31,6 +31,7 @@ function move(color: 'white' | 'black', loss: number, extra: Partial<MoveAnalysi
     color,
     san: 'e4',
     uci: 'e2e4',
+    captured: null,
     fenBefore: '',
     fenAfter: '',
     bestMoveUci: null,

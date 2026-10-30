@@ -11,6 +11,12 @@ describe('tryMove', () => {
     expect(turnOf(move!.fen)).toBe('black')
   })
 
+  it('records what a move captures', () => {
+    const afterD5 = tryMove(tryMove(START, 'e2', 'e4')!.fen, 'd7', 'd5')!
+    expect(tryMove(afterD5.fen, 'e4', 'd5')).toMatchObject({ san: 'exd5', captured: 'p' })
+    expect(afterD5.captured).toBeNull()
+  })
+
   it('rejects illegal moves and moves by the side not to move', () => {
     expect(tryMove(START, 'e2', 'e5')).toBeNull()
     expect(tryMove(START, 'e7', 'e5')).toBeNull()
