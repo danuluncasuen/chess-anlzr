@@ -23,11 +23,17 @@ const MIN_RATING = 100
 const MAX_RATING = 3000
 
 /**
- * How far one game moves the estimate away from the player's usual level (0..1).
- * With ±15 points of noise per game, 0.25 corresponds to a player's real form
- * varying by about ±9 points from game to game.
+ * How far one game moves its estimate away from the anchor (0..1). With ±15 points of noise
+ * per game, 0.25 corresponds to a player's real form varying by about ±9 points from game to game.
  */
 export const GAME_WEIGHT = 0.25
+
+/**
+ * Every single-game estimate starts from the accuracy of a typical player at this rating, the same
+ * for everyone, so it depends only on the game's accuracy: never on who played it, their rating or
+ * their history. Better play always means a higher estimate.
+ */
+export const GAME_ANCHOR_RATING = 1000
 
 /** Typical accuracy at a rating, from the same fit. */
 export function expectedAccuracy(rating: number): number {
@@ -35,11 +41,12 @@ export function expectedAccuracy(rating: number): number {
 }
 
 /**
- * Rating estimate for one game: starts from the player's usual accuracy
- * (`usualAccuracy`) and moves GAME_WEIGHT of the way toward this game's.
+ * "Played like" estimate for one game, from its accuracy alone: starts at the anchor's accuracy and
+ * moves GAME_WEIGHT of the way toward this game's (e.g. 82.7% → ~1250, 69.9% → ~850).
  */
-export function estimateGameRating(accuracy: number, usualAccuracy: number): number {
-  return estimateRating(usualAccuracy + GAME_WEIGHT * (accuracy - usualAccuracy))
+export function estimateGameRating(accuracy: number): number {
+  const anchor = expectedAccuracy(GAME_ANCHOR_RATING)
+  return estimateRating(anchor + GAME_WEIGHT * (accuracy - anchor))
 }
 
 /** Estimated rating for an accuracy (0..100), rounded to the nearest 50. */

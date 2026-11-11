@@ -38,15 +38,19 @@ describe('expectedAccuracy', () => {
 })
 
 describe('estimateGameRating', () => {
-  it('equals the usual-level estimate for a typical game', () => {
-    expect(estimateGameRating(73.6, 73.6)).toBe(estimateRating(73.6))
+  it('depends only on the game’s accuracy, the same for every player', () => {
+    // The game that prompted this: 82.7% vs 69.9%; the better game gets the higher estimate.
+    expect(estimateGameRating(82.7)).toBe(1250)
+    expect(estimateGameRating(69.9)).toBe(850)
+  })
+
+  it('gives the anchor rating for a typical game at that level', () => {
+    expect(estimateGameRating(expectedAccuracy(1000))).toBe(1000)
   })
 
   it('moves only part of the way toward a single game', () => {
-    const usual = 73.6
-    const great = estimateGameRating(89.7, usual)
-    expect(great).toBeGreaterThan(estimateRating(usual))
+    const great = estimateGameRating(89.7)
+    expect(great).toBeGreaterThan(1000)
     expect(great).toBeLessThan(estimateRating(89.7))
-    expect(great).toBe(estimateRating(usual + 0.25 * (89.7 - usual)))
   })
 })

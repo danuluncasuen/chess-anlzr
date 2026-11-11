@@ -1,5 +1,5 @@
 import type { QueueState } from '../analysis/queue'
-import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
+import { estimateGameRating } from '../analysis/rating'
 import type { GameAccuracy } from '../analysis/summary'
 import type { Game } from '../types'
 
@@ -9,7 +9,7 @@ interface Props {
   games: Game[]
   analysis: QueueState
   accuracies: ReadonlyMap<string, GameAccuracy>
-  /** The player's average accuracy, which per-game rating estimates start from. */
+  /** The player's average accuracy, for the above/below-average arrows. */
   usualAccuracy: number | null
   onOpen: (gameId: string) => void
 }
@@ -61,7 +61,7 @@ export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }:
                   {g.opening ?? '—'}
                 </td>
                 <td className="accuracy">
-                  {accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy ?? expectedAccuracy(g.myRating))}
+                  {accuracyCell(accuracies.get(g.id)?.mine ?? null, usualAccuracy)}
                 </td>
                 <td className="status-cell">{analysisStatus(g.id, analysis, onOpen)}</td>
               </tr>
@@ -97,12 +97,13 @@ function analysisStatus(
 /** Games this many accuracy points above or below the player's usual get an arrow. */
 const NOTABLE_GAP = 5
 
-function accuracyCell(accuracy: number | null, usual: number) {
+/** The game's accuracy and "played like" estimate; the arrow compares it with the player's average. */
+function accuracyCell(accuracy: number | null, usual: number | null) {
   if (accuracy === null) return <span className="muted">—</span>
-  const gap = accuracy - usual
+  const gap = usual === null ? 0 : accuracy - usual
   return (
     <>
-      {accuracy.toFixed(1)}% <span className="muted">~{estimateGameRating(accuracy, usual)}</span>
+      {accuracy.toFixed(1)}% <span className="muted">~{estimateGameRating(accuracy)}</span>
       {gap >= NOTABLE_GAP && (
         <span className="trend trend-up" title={`${gap.toFixed(1)} points above your average`}>
           {' '}▲
