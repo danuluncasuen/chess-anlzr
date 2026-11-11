@@ -77,7 +77,8 @@ src/
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
   theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
   index.css                Color tokens for both themes (#212121 charcoal / #ffe2bd cream) + styles
-  components/Footer.tsx         License/source notices and the chess.com disclaimer
+  components/Footer.tsx         License/source notices, chess.com disclaimer, saved-data size + "Clear saved data"
+  db/storage.ts            Persistent-storage request, saved-data size, clearing games/analyses/username
   App.tsx                  Sticky top bar (logo back to start, username form, section links) + views
 scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (runs before dev/build)
 ```
@@ -86,6 +87,10 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
 
 - **CORS:** verified on 2026-10-22. api.chess.com sends `Access-Control-Allow-Origin: *`, so no proxy is needed.
   Don't add custom request headers; they would trigger a preflight request.
+- **Storage:** about 3 KB per game plus 4 KB per analysis in IndexedDB (~364 KB for 30 analyzed games), far
+  below browser quotas, so there's no automatic cleanup. After games load, the app asks the browser to keep
+  the data (`navigator.storage.persist()`; Chrome decides by engagement, Firefox may ask once). The footer
+  shows the size and can delete games, analyses and the remembered username (the theme stays).
 - **Cache:** completed months are cached indefinitely, the current month for 10 minutes and the archive list for 1 hour.
 - **Engine:** Stockfish 19 lite single-threaded (~1.8 MB), depth 12. About 5 s per game in Chrome on a laptop.
   Analyses store the engine id and depth; games are re-analyzed automatically if either changes.
