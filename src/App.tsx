@@ -8,13 +8,13 @@ import { Footer } from './components/Footer'
 import { GameList } from './components/GameList'
 import { Intro } from './components/Intro'
 import { SummaryView } from './components/SummaryView'
+import { clearSavedData, LAST_USER_KEY, requestPersistentStorage } from './db/storage'
 import { ThemeToggle } from './components/ThemeToggle'
 import { StockfishEngine } from './engine/stockfish'
 import { chessComSource } from './sources/chesscom/source'
 import type { Game } from './types'
 
 const DEFAULT_LIMIT = 30
-const LAST_USER_KEY = 'chess-anlzr:lastUsername'
 
 function readLastUsername(): string {
   try {
@@ -73,6 +73,14 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
+  /** Deletes saved games and analyses (after pausing analysis), then starts fresh. */
+  async function clearData() {
+    abortRef.current?.abort()
+    await queue.pause()
+    await clearSavedData()
+    window.location.reload()
+  }
+
   function openGameDetail(gameId: string) {
     listScrollRef.current = window.scrollY
     history.pushState({ gameId }, '')
@@ -103,6 +111,8 @@ export default function App() {
         onProgress: (p) => setStatus(p.message),
       })
       setGames(result)
+      // The user is now relying on saved analyses: ask the browser not to clean them up.
+      void requestPersistentStorage()
       setOpenGameId(null)
       await queue.setGames(result)
       if (!controller.signal.aborted) queue.start()
@@ -200,7 +210,7 @@ export default function App() {
           />
         )}
       </main>
-      <Footer />
+      <Footer savedVersion={queueState.analyzed.size} onClearData={clearData} />
     </>
   )
 }

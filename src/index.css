@@ -893,6 +893,30 @@ tr.muted td {
   color: var(--muted);
 }
 
+.site-footer .saved-data {
+  margin-bottom: 10px;
+}
+
+.footer-button {
+  font: inherit;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--fg);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer-button.danger {
+  color: var(--loss);
+  font-weight: 600;
+}
+
+.footer-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .play-rating {
   display: inline-block;
   padding: 0 6px;
