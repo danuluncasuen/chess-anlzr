@@ -11,6 +11,7 @@ import { MaterialRow } from './MaterialRow'
 const LAST_MOVE_TINT = 'rgba(255, 214, 10, 0.45)'
 /** Square tint and arrow color for the played move, by its rating (same hues as the dots). */
 const CLASS_COLOR: Partial<Record<MoveClass, string>> = {
+  brilliant: 'rgba(45, 212, 191, 0.7)',
   inaccuracy: 'rgba(250, 178, 25, 0.75)',
   mistake: 'rgba(236, 131, 90, 0.8)',
   blunder: 'rgba(208, 59, 59, 0.8)',
@@ -23,7 +24,12 @@ const PICKED_TINT = 'rgba(80, 150, 255, 0.6)'
 const TARGET_STYLE: CSSProperties = {
   backgroundImage: 'radial-gradient(circle, rgba(33, 33, 33, 0.35) 20%, transparent 22%)',
 }
-const ARROW_NAME: Partial<Record<MoveClass, string>> = { inaccuracy: 'amber', mistake: 'orange', blunder: 'red' }
+const ARROW_NAME: Partial<Record<MoveClass, string>> = {
+  brilliant: 'teal',
+  inaccuracy: 'amber',
+  mistake: 'orange',
+  blunder: 'red',
+}
 
 interface Props {
   moves: MoveAnalysis[]

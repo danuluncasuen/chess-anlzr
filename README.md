@@ -49,6 +49,7 @@ src/
   analysis/accuracy.ts     Lichess accuracy: per move from win% drop, per game volatility-weighted + harmonic mean
   analysis/usePositionEval.ts  On-demand engine eval for positions you try (its own engine, separate from the queue)
   chess/material.ts        Piece values (1/3/3/5/9), material balance of a position, captures per side
+  analysis/brilliant.ts    Brilliant moves (!!): sound piece sacrifices, with a static exchange evaluation
   analysis/explain.ts      Plain-language "why" for an error: mate allowed/missed, the punishing reply and
                            whether it was played, what it takes (and if undefended), what the best move does
   analysis/rating.ts       Rough rating estimate from accuracy (calibrated anchor points)
@@ -59,7 +60,7 @@ src/
     chesscom/api.ts        Raw chess.com API client
     chesscom/normalize.ts  chess.com game -> Game
     chesscom/source.ts     Cached, serial loader: newest months first, up to 3 months
-  components/GameList.tsx  Basic game table
+  components/GameList.tsx  Game table: accuracy pill colored red→green, "!!" badge for games with a brilliant move
   components/AnalysisPanel.tsx  Progress bar + pause/resume
   components/GameDetail.tsx     Per-game view: error counts, eval graph, biggest mistakes, all moves
   components/SummaryView.tsx    "Where you lose points": stat tiles, insights, grouped tables
@@ -112,6 +113,10 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
   Pieces can be dragged (or tapped, then a target tapped) to try a line from the shown position; legal moves
   only (`src/chess/variation.ts`), pawns always promote to a queen. A second Stockfish evaluates each position
   of the line at the same depth as the game analysis. Selecting any game move leaves the line.
+- **Brilliant (!!):** Stockfish's own move that offers the moved piece (knight, bishop, rook or queen)
+  where the opponent wins at least 2 points net once the captures on that square play out (pawn moves
+  and even trades never count), played when the mover wasn't already over 90% to win and stays at 40%+.
+  About 0.3% of moves on a sample of 30 club games (classic Bxf7+, Bxh2+ sacrifices).
 - **Classification:** a move's loss is the drop in the mover's winning chances (Lichess formula, evals capped at
   ±10 pawns). Thresholds 5 / 10 / 15 points = inaccuracy / mistake / blunder, in `THRESHOLDS` in classify.ts.
   Playing the engine's best move always counts as "best".

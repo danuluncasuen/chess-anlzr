@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
-import { formatScore, moveLabel, winProbability, type MoveAnalysis } from '../analysis/classify'
+import { formatScore, hasBetterMove, moveLabel, winProbability, type MoveAnalysis } from '../analysis/classify'
 import type { Color } from '../types'
 
 const HEIGHT = 200
@@ -8,7 +8,8 @@ const M = { top: 8, right: 8, bottom: 22, left: 40 }
 const PHASE_LABEL_WIDTH = 72
 /** Must match .graph-tooltip's max-width in index.css. */
 const TOOLTIP_MAX_WIDTH = 240
-const ERROR_CLASSES = new Set(['inaccuracy', 'mistake', 'blunder'])
+/** Moves marked on the line: the player's errors, and their brilliant moves. */
+const MARKED_CLASSES = new Set(['brilliant', 'inaccuracy', 'mistake', 'blunder'])
 
 interface Props {
   moves: MoveAnalysis[]
@@ -37,7 +38,7 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
 
   const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(p)}`).join('')
   const area = `${line}L${x(n)},${y(0)}L${x(0)},${y(0)}Z`
-  const errors = moves.filter((m) => m.color === myColor && ERROR_CLASSES.has(m.class))
+  const errors = moves.filter((m) => m.color === myColor && MARKED_CLASSES.has(m.class))
   const moveTicks = xTicks(moves, innerW)
   // Where each phase starts: the position before its first move.
   const phaseStarts = moves
@@ -161,8 +162,8 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
 
 function describeMove(m: MoveAnalysis): string {
   const parts = [moveLabel(m), formatScore(m.evalAfter)]
-  if (ERROR_CLASSES.has(m.class)) parts.push(m.class)
-  if (m.class !== 'best' && m.bestMoveSan) parts.push(`best ${m.bestMoveSan}`)
+  if (MARKED_CLASSES.has(m.class)) parts.push(m.class)
+  if (hasBetterMove(m) && m.bestMoveSan) parts.push(`best ${m.bestMoveSan}`)
   return parts.join(' · ')
 }
 

@@ -3,6 +3,7 @@
 import { Chess, type PieceSymbol, type Square } from 'chess.js'
 import type { Score } from '../engine/types'
 import type { Color } from '../types'
+import { sacrificedMaterial } from './brilliant'
 import { formatScore, hasBetterMove, type MoveAnalysis } from './classify'
 
 const PIECE_NAME: Record<PieceSymbol, string> = {
@@ -87,6 +88,7 @@ export function explainMove(move: MoveAnalysis, next: MoveAnalysis | undefined, 
   if (missedMate !== null && mateFor(move.evalAfter, move.color) === null && move.bestMoveSan) {
     sentences.push(`${move.bestMoveSan} was mate in ${missedMate}.`)
   }
+  if (move.class === 'brilliant') return [...sentences, ...explainSacrifice(move, next, mine)]
   const explained = EXPLAINED.has(move.class)
   if (!explained && sentences.length === 0) return sentences
 
@@ -116,6 +118,24 @@ export function explainMove(move: MoveAnalysis, next: MoveAnalysis | undefined, 
   if (hasBetterMove(move) && move.bestMoveUci && missedMate === null) {
     const desc = describe(moveFacts(move.fenBefore, move.bestMoveUci), mine ? 'their' : 'your')
     sentences.push(`Best was ${move.bestMoveSan ?? move.bestMoveUci}${desc}.`)
+  }
+  return sentences
+}
+
+/** Why a brilliant move counts: what it gave up, that the engine agrees, and whether it was taken. */
+function explainSacrifice(move: MoveAnalysis, next: MoveAnalysis | undefined, mine: boolean): string[] {
+  const piece = new Chess(move.fenBefore).get(move.uci.slice(0, 2) as Square)
+  const given = sacrificedMaterial(move.fenBefore, move.uci)
+  const offered = `${mine ? 'you offered your' : 'your opponent offered their'} ${piece ? PIECE_NAME[piece.type] : 'piece'}`
+  const verdict = hasBetterMove(move)
+    ? `Stockfish rates it nearly as good as its own choice, ${move.bestMoveSan ?? move.bestMoveUci}`
+    : 'Stockfish rates it the best move'
+  const sentences = [`A sacrifice: ${offered}, giving up ${given} points of material, and ${verdict}.`]
+  if (next) {
+    // "Taken" when the next move captures on the square the sacrificed piece went to.
+    const taken = !!next.captured && next.uci.slice(2, 4) === move.uci.slice(2, 4)
+    const answerer = mine ? 'Your opponent' : 'You'
+    sentences.push(taken ? `${answerer} took it.` : `${answerer} declined it and played ${next.san}.`)
   }
   return sentences
 }

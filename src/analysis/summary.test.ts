@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Game } from '../types'
 import { classifyLoss, type MoveAnalysis } from './classify'
-import { insights, summarize, type ClassifiedGame } from './summary'
+import { brilliantCountOf, insights, summarize, type ClassifiedGame } from './summary'
 
 function game(id: string, overrides: Partial<Game> = {}): Game {
   return {
@@ -102,6 +102,21 @@ describe('summarize', () => {
     const empty = summarize([])
     expect(empty.overall).toMatchObject({ games: 0, moves: 0, avgLoss: 0, share: 0 })
     expect(empty.byPhase).toEqual([])
+  })
+})
+
+describe('brilliantCountOf', () => {
+  it('counts only the player’s brilliant moves', () => {
+    const g: ClassifiedGame = {
+      game: game('g1', { myColor: 'white' }),
+      moves: [
+        move('white', 0, { class: 'brilliant' }),
+        move('black', 0, { class: 'brilliant' }),
+        move('white', 0, { class: 'brilliant' }),
+        move('white', 20),
+      ],
+    }
+    expect(brilliantCountOf(g)).toBe(2)
   })
 })
 

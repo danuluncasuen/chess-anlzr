@@ -1,10 +1,12 @@
 import { phaseOf, tagsOf, type MoveTag, type Phase } from '../chess/phase'
+import { isBrilliant } from './brilliant'
 import type { PieceSymbol } from 'chess.js'
 import { pgnToPositions, uciToSan } from '../chess/positions'
 import type { Score } from '../engine/types'
 import type { Analysis, Color } from '../types'
 
-export type MoveClass = 'best' | 'ok' | 'inaccuracy' | 'mistake' | 'blunder'
+/** 'brilliant' is a sound sacrifice (see brilliant.ts); the rest come from the drop in winning chances. */
+export type MoveClass = 'brilliant' | 'best' | 'ok' | 'inaccuracy' | 'mistake' | 'blunder'
 
 /**
  * Minimum drop in the mover's winning chances (0..1) for each class.
@@ -113,7 +115,17 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
       winProbAfter,
       winProbLoss,
       centipawnLoss,
-      class: isBest ? 'best' : classifyLoss(winProbLoss),
+      class: isBrilliant({
+        fenBefore: positions[i]!,
+        uci: move.uci,
+        isBest,
+        winProbBefore,
+        winProbAfter,
+      })
+        ? 'brilliant'
+        : isBest
+          ? 'best'
+          : classifyLoss(winProbLoss),
       phase: PHASE_ORDER[phaseIndex]!,
       tags: tagsOf(positions[i]!),
     }
@@ -130,8 +142,8 @@ export function formatScore(score: Score): string {
   return `${pawns > 0 ? '+' : ''}${pawns.toFixed(1)}`
 }
 
-/** Chess annotation symbols for each error class. */
 export const CLASS_LABEL: Record<MoveClass, string> = {
+  brilliant: 'Brilliant',
   best: 'Best',
   ok: 'OK',
   inaccuracy: 'Inaccuracy',
@@ -141,10 +153,12 @@ export const CLASS_LABEL: Record<MoveClass, string> = {
 
 /** Whether the engine preferred a different move (so there's a "best move" to show). */
 export function hasBetterMove(move: MoveAnalysis | undefined): boolean {
-  return !!move && move.class !== 'best' && !!move.bestMoveUci
+  return !!move?.bestMoveUci && move.bestMoveUci !== move.uci
 }
 
+/** Chess annotation symbols for each class. */
 export const CLASS_SYMBOL: Record<MoveClass, string> = {
+  brilliant: '!!',
   best: '',
   ok: '',
   inaccuracy: '?!',

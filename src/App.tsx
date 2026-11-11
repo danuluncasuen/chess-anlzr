@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent } from 'react'
 import { AnalysisQueue } from './analysis/queue'
-import { accuracyOf, summarize } from './analysis/summary'
+import { accuracyOf, brilliantCountOf, summarize } from './analysis/summary'
 import { useClassifiedGames } from './analysis/useClassifiedGames'
 import { AnalysisPanel } from './components/AnalysisPanel'
 import { GameDetail } from './components/GameDetail'
@@ -123,6 +123,10 @@ export default function App() {
     () => new Map(classified.map((c) => [c.game.id, accuracyOf(c)])),
     [classified],
   )
+  const brilliantCounts = useMemo(
+    () => new Map(classified.map((c) => [c.game.id, brilliantCountOf(c)])),
+    [classified],
+  )
   const openGame = games?.find((g) => g.id === openGameId)
 
   return (
@@ -190,6 +194,7 @@ export default function App() {
             games={games}
             analysis={queueState}
             accuracies={accuracies}
+            brilliantCounts={brilliantCounts}
             usualAccuracy={summary.accuracy}
             onOpen={openGameDetail}
           />

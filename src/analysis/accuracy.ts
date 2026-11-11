@@ -64,3 +64,24 @@ function stdDev(xs: number[]): number {
   const mean = xs.reduce((s, x) => s + x, 0) / xs.length
   return Math.sqrt(xs.reduce((s, x) => s + (x - mean) ** 2, 0) / xs.length)
 }
+
+/** Accuracy at or below this shows as red, at or above ACCURACY_GREEN as green, a smooth scale between. */
+const ACCURACY_RED = 55
+const ACCURACY_GREEN = 92
+const RED_HUE = 0
+const GREEN_HUE = 130
+
+/** A color hue (0 = red … 130 = green) for a game's accuracy, for coloring how well it was played. */
+export function accuracyHue(accuracy: number): number {
+  const t = (accuracy - ACCURACY_RED) / (ACCURACY_GREEN - ACCURACY_RED)
+  return Math.round(RED_HUE + Math.min(1, Math.max(0, t)) * (GREEN_HUE - RED_HUE))
+}
+
+/** A word for how well a game was played, by accuracy (shown with the color, so it's never color alone). */
+export function accuracyWord(accuracy: number): string {
+  if (accuracy >= 90) return 'excellent'
+  if (accuracy >= 80) return 'good'
+  if (accuracy >= 70) return 'decent'
+  if (accuracy >= 60) return 'shaky'
+  return 'poor'
+}

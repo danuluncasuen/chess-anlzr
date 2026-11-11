@@ -10,6 +10,7 @@ import {
   type MoveClass,
 } from '../analysis/classify'
 import { gameAccuracy } from '../analysis/accuracy'
+import { sacrificedMaterial } from '../analysis/brilliant'
 import { estimateGameRating } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
@@ -24,6 +25,8 @@ import { MoveList } from './MoveList'
 
 const MAX_MISTAKES = 10
 const ERROR_CLASSES: MoveClass[] = ['inaccuracy', 'mistake', 'blunder']
+/** Ratings shown with a colored badge and counted in the table above the board. */
+const COUNTED_CLASSES: MoveClass[] = ['brilliant', ...ERROR_CLASSES]
 
 interface Props {
   game: Game
@@ -61,6 +64,7 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
     .filter((m) => m.color === game.myColor && ERROR_CLASSES.includes(m.class))
     .sort((a, b) => b.winProbLoss - a.winProbLoss)
     .slice(0, MAX_MISTAKES)
+  const myBrilliant = (moves ?? []).filter((m) => m.color === game.myColor && m.class === 'brilliant')
   const selectedMove = selected ? moves?.[selected - 1] : undefined
   // Which ply the "best move" view is open for; selecting another move closes it.
   const [bestShownFor, setBestShownFor] = useState<number | null>(null)
@@ -163,6 +167,33 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
             </div>
           </div>
 
+          {myBrilliant.length > 0 && (
+            <>
+              <h3>Your brilliant moves</h3>
+              <ol className="mistakes">
+                {myBrilliant.map((m) => (
+                  <li key={m.ply}>
+                    <button
+                      type="button"
+                      className={m.ply === selected ? 'selected' : undefined}
+                      onClick={() => showOnBoard(m.ply)}
+                    >
+                      <ClassBadge cls={m.class} />
+                      <strong>{moveLabel(m)}</strong>
+                      <span>
+                        gave up {sacrificedMaterial(m.fenBefore, m.uci)} points · {pct(m.winProbBefore)} →{' '}
+                        {pct(m.winProbAfter)}
+                      </span>
+                      <span className="muted">
+                        {m.tags.includes('rook-endgame') ? 'rook endgame' : m.phase}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+
           <h3>Your biggest mistakes</h3>
           {myErrors.length === 0 ? (
             <p className="muted">No inaccuracies, mistakes or blunders. Nice game!</p>
@@ -214,8 +245,8 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
                     >
                       <td>{moveLabel(m)}</td>
                       <td>{formatScore(m.evalAfter)}</td>
-                      <td>{ERROR_CLASSES.includes(m.class) ? <ClassBadge cls={m.class} /> : CLASS_LABEL[m.class]}</td>
-                      <td>{m.class === 'best' ? '' : (m.bestMoveSan ?? '')}</td>
+                      <td>{COUNTED_CLASSES.includes(m.class) ? <ClassBadge cls={m.class} /> : CLASS_LABEL[m.class]}</td>
+                      <td>{hasBetterMove(m) ? (m.bestMoveSan ?? '') : ''}</td>
                       <td>{m.tags.includes('rook-endgame') ? 'rook endgame' : m.phase}</td>
                     </tr>
                   ))}
@@ -306,7 +337,7 @@ function ErrorCounts({
   const row = (color: string) => {
     const own = moves.filter((m) => m.color === color)
     const acpl = own.length ? Math.round(own.reduce((s, m) => s + m.centipawnLoss, 0) / own.length) : 0
-    return [...ERROR_CLASSES.map((c) => own.filter((m) => m.class === c).length), acpl]
+    return [...COUNTED_CLASSES.map((c) => own.filter((m) => m.class === c).length), acpl]
   }
   return (
     <div className="table-wrap">
@@ -314,7 +345,7 @@ function ErrorCounts({
         <thead>
           <tr>
             <th />
-            {ERROR_CLASSES.map((c) => (
+            {COUNTED_CLASSES.map((c) => (
               <th key={c} title={CLASS_LABEL[c]}>
                 <span className="class-badge">
                   <span className={`dot dot-${c}`} aria-hidden="true" />
