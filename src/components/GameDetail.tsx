@@ -10,7 +10,7 @@ import {
   type MoveClass,
 } from '../analysis/classify'
 import { gameAccuracy } from '../analysis/accuracy'
-import { estimateGameRating, expectedAccuracy } from '../analysis/rating'
+import { estimateGameRating } from '../analysis/rating'
 import { db } from '../db/db'
 import type { Game } from '../types'
 import { usePositionEval } from '../analysis/usePositionEval'
@@ -29,7 +29,7 @@ interface Props {
   game: Game
   /** Re-read the analysis when this flips to true. */
   analyzed: boolean
-  /** The player's average accuracy, which this game's rating estimate starts from. */
+  /** The player's average accuracy, to say whether this game was above or below it. */
   usualAccuracy: number | null
   onBack: () => void
 }
@@ -230,9 +230,9 @@ export function GameDetail({ game, analyzed, usualAccuracy, onBack }: Props) {
 }
 
 const ONE_GAME_CAVEAT =
-  'One game says little on its own, so each estimate starts from the player’s usual level ' +
-  '(your average accuracy; for your opponent, the accuracy typical of their rating) ' +
-  'and moves only partway toward this game.'
+  'One game says little on its own, so each estimate starts from a typical 1000-level game and moves ' +
+  'only partway toward this game’s accuracy. The same rule applies to both players: it depends on ' +
+  'the accuracy alone, not on anyone’s rating or history.'
 
 function AccuracyVerdict({
   game,
@@ -247,13 +247,15 @@ function AccuracyVerdict({
   const theirs = gameAccuracy(moves, game.myColor === 'white' ? 'black' : 'white')
   if (mine === null) return <p className="muted">You made no moves in this game.</p>
 
-  const usual = usualAccuracy ?? expectedAccuracy(game.myRating)
-  const myEstimate = estimateGameRating(mine, usual)
-  const theirEstimate = theirs === null ? null : estimateGameRating(theirs, expectedAccuracy(game.opponentRating))
+  const myEstimate = estimateGameRating(mine)
+  const theirEstimate = theirs === null ? null : estimateGameRating(theirs)
   const fmt = (a: number) => `${a.toFixed(1)}%`
+  const usual = usualAccuracy
   const vsUsual =
-    Math.abs(mine - usual) < 3 ? 'about your usual' : mine > usual ? 'above your usual' : 'below your usual'
-  let conclusion = `You played at ${fmt(mine)} accuracy (${vsUsual} ${fmt(usual)}), roughly ${myEstimate}-level play`
+    usual === null
+      ? ''
+      : ` (${Math.abs(mine - usual) < 3 ? 'about your usual' : mine > usual ? 'above your usual' : 'below your usual'} ${fmt(usual)})`
+  let conclusion = `You played at ${fmt(mine)} accuracy${vsUsual}, roughly ${myEstimate}-level play`
   if (theirs !== null) {
     const gap = mine - theirs
     conclusion +=
@@ -285,7 +287,7 @@ function AccuracyVerdict({
       <p>
         {conclusion}{' '}
         <span className="muted" title={ONE_GAME_CAVEAT}>
-          (rough: one game moves the estimate only partway from your usual level)
+          (rough: one game moves the estimate only partway from 1000)
         </span>
       </p>
     </div>

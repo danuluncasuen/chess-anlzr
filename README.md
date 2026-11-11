@@ -101,9 +101,11 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
   volatility-weighted and a harmonic average). Implemented in `src/analysis/accuracy.ts`.
 - **Estimated rating:** `src/analysis/rating.ts` maps accuracy to rating with a log curve fitted on 290
   chess.com blitz player-games (100–3261, engine at depth 12): 64% ≈ 300, 75% ≈ 1000, 81% ≈ 2000.
-  One game's accuracy scatters ±15 points, so the summary shows the average with a likely range, and each
-  game's estimate starts from the player's usual accuracy and moves only 25% toward that game's
-  (`GAME_WEIGHT`). Accuracy flattens out above ~2000, so estimates up there are unreliable.
+  One game's accuracy scatters ±15 points, so the summary shows the average with a likely range, and a
+  single game's "played like" starts from a typical 1000-level game for everyone (`GAME_ANCHOR_RATING`) and
+  moves only 25% toward that game's accuracy (`GAME_WEIGHT`). It depends on the accuracy alone, never on
+  either player's rating or history, so the more accurate player always gets the higher estimate.
+  Accuracy flattens out above ~2000, so estimates up there are unreliable.
 - **Board:** `react-chessboard` (MIT). Shows the position after the selected move with its squares tinted by
   rating; "Best: …" switches to the position before it, with arrows for the move played and Stockfish's choice.
   Board colors are fixed (cream/brown, like the icon) in both themes.

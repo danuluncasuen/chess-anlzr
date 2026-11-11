@@ -25,3 +25,6 @@ dist-ssr
 
 # Copied from node_modules by scripts/copy-engine.mjs
 public/engine
+
+# Wrangler (Cloudflare CLI) local cache
+.wrangler
