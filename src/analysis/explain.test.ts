@@ -118,13 +118,15 @@ describe('explainMove for a brilliant move', () => {
   // The "Greek gift": 8. Bxh7+ gives a bishop for a pawn, and the engine likes it.
   const pgn =
     '[FEN "r1bq1rk1/pppn1ppp/4p3/3pP3/1b1P4/2NB1N2/PPP2PPP/R1BQK2R w KQ - 0 8"]\n[SetUp "1"]\n\n8. Bxh7+ Kxh7 *'
-  const plies = [ev(cp(80), 'd3h7'), ev(cp(90), 'g8h7'), ev(cp(90), 'f3g5')]
+  // Stockfish's second-best (+0.8 vs -1.0) is far worse: Bxh7+ is the one strong move.
+  const plies = [{ ...ev(cp(80), 'd3h7'), secondScore: cp(-100) }, ev(cp(90), 'g8h7'), ev(cp(90), 'f3g5')]
 
   it('rates the sacrifice brilliant and says what it gave up and whether it was taken', () => {
     const moves = classifyGame(pgn, analysis(plies))
     expect(moves[0]!.class).toBe('brilliant')
     expect(explainMove(moves[0]!, moves[1], 'white')).toEqual([
-      'A sacrifice: you offered your bishop, giving up 2 points of material, and Stockfish rates it the best move.',
+      'A sacrifice: you offered your bishop, giving up 2 points of material, and it’s Stockfish’s best move.',
+      'It was the one strong move: it kept your winning chances at 57%, where the next best would have left 41%.',
       'Your opponent took it.',
     ])
   })

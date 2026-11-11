@@ -5,6 +5,11 @@ import type { Analysis, Game } from '../types'
 import { analyzeGame } from './analyzeGame'
 
 export const DEFAULT_DEPTH = 12
+/**
+ * Engine lines per position: the best move and the second-best, so a brilliant move can be told
+ * apart from one of several good moves. Analyses with fewer lines get redone.
+ */
+export const ANALYSIS_LINES = 2
 
 /** idle: work left, not started. done: nothing left. */
 export type QueueStatus = 'idle' | 'running' | 'paused' | 'done'
@@ -106,6 +111,7 @@ export class AnalysisQueue {
         try {
           const analysis = await analyzeGame(this.engine, game, {
             depth: this.depth,
+            lines: ANALYSIS_LINES,
             signal,
             onProgress: (done, total) => this.update({ current: { gameId: game.id, done, total } }),
           })
@@ -137,7 +143,11 @@ export class AnalysisQueue {
   }
 
   private isUsable(a: Analysis): boolean {
-    return a.depth >= this.depth && (this.engineId === null || a.engineId === this.engineId)
+    return (
+      a.depth >= this.depth &&
+      (a.lines ?? 1) >= ANALYSIS_LINES &&
+      (this.engineId === null || a.engineId === this.engineId)
+    )
   }
 
   private update(patch: Partial<QueueState>) {

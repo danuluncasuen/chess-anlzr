@@ -50,10 +50,17 @@ describe('isBrilliant', () => {
     isBest: true,
     winProbBefore: 0.6,
     winProbAfter: 0.62,
+    secondBestWinProb: 0.4,
   }
 
   it('calls a sound sacrifice brilliant', () => {
     expect(isBrilliant(greekGift)).toBe(true)
+  })
+
+  it('must be clearly better than the second-best move', () => {
+    expect(isBrilliant({ ...greekGift, secondBestWinProb: 0.55 })).toBe(false) // only 5 points better
+    expect(isBrilliant({ ...greekGift, secondBestWinProb: 0.48 })).toBe(true) // 12 points better
+    expect(isBrilliant({ ...greekGift, secondBestWinProb: null })).toBe(false) // not known
   })
 
   it('only counts Stockfish’s own move', () => {

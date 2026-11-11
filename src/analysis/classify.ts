@@ -40,6 +40,11 @@ export interface MoveAnalysis {
   /** The mover's winning chances (0..1) before and after the move. */
   winProbBefore: number
   winProbAfter: number
+  /**
+   * The mover's winning chances (0..1) with the engine's second-best move instead, or null when there
+   * was only one legal move or the analysis predates second-best scores.
+   */
+  secondBestWinProb: number | null
   winProbLoss: number
   /** Drop in the mover's eval in centipawns (capped at ±1000, mate counts as 1000). */
   centipawnLoss: number
@@ -94,6 +99,7 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
 
     const winProbBefore = toMover(winProbability(before.score))
     const winProbAfter = toMover(winProbability(after.score))
+    const secondBestWinProb = before.secondScore ? toMover(winProbability(before.secondScore)) : null
     // The engine's own move is never an error, even if the two searches disagree slightly.
     const isBest = before.bestMove === move.uci
     const winProbLoss = isBest ? 0 : Math.max(0, winProbBefore - winProbAfter)
@@ -113,6 +119,7 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
       evalAfter: after.score,
       winProbBefore,
       winProbAfter,
+      secondBestWinProb,
       winProbLoss,
       centipawnLoss,
       class: isBrilliant({
@@ -121,6 +128,7 @@ export function classifyGame(pgn: string, analysis: Analysis): MoveAnalysis[] {
         isBest,
         winProbBefore,
         winProbAfter,
+        secondBestWinProb,
       })
         ? 'brilliant'
         : isBest

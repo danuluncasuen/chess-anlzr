@@ -42,6 +42,7 @@ function move(color: 'white' | 'black', loss: number, extra: Partial<MoveAnalysi
     evalAfter: { type: 'cp', value: 0 },
     winProbBefore: 0.5,
     winProbAfter: 0.5 - loss / 100,
+    secondBestWinProb: null,
     winProbLoss: loss / 100,
     centipawnLoss: 0,
     class: classifyLoss(loss / 100),
