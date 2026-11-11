@@ -1,0 +1,14 @@
+// Cloudflare Workers config: the site is the static build in dist/, served by Cloudflare.
+// Workers Builds (connected to GitHub) runs `npm run build`, then `npx wrangler deploy` for master
+// (production) and `npx wrangler preview` for other branches (a preview URL per PR).
+{
+  "name": "chess-anlzr",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Unknown paths serve the app (index.html), as the dashboard-created Worker did.
+    "not_found_handling": "single-page-application"
+  },
+  // Required by `wrangler preview`; empty means previews use the settings above.
+  "previews": {}
+}
