@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+import { accuracyHue, accuracyWord } from '../analysis/accuracy'
 import type { QueueState } from '../analysis/queue'
 import { estimateGameRating } from '../analysis/rating'
 import type { GameAccuracy } from '../analysis/summary'
@@ -9,12 +11,14 @@ interface Props {
   games: Game[]
   analysis: QueueState
   accuracies: ReadonlyMap<string, GameAccuracy>
+  /** The player's brilliant moves per game; games with any get a "!!" badge. */
+  brilliantCounts: ReadonlyMap<string, number>
   /** The player's average accuracy, for the above/below-average arrows. */
   usualAccuracy: number | null
   onOpen: (gameId: string) => void
 }
 
-export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }: Props) {
+export function GameList({ games, analysis, accuracies, brilliantCounts, usualAccuracy, onOpen }: Props) {
   if (games.length === 0) return <p>No standard games found in the last few months.</p>
 
   return (
@@ -56,7 +60,10 @@ export function GameList({ games, analysis, accuracies, usualAccuracy, onOpen }:
                 <td className="opponent">
                   {g.opponentName} <span className="muted">({g.opponentRating})</span>
                 </td>
-                <td className={`result result-${g.result}`}>{g.result}</td>
+                <td className={`result result-${g.result}`}>
+                  {g.result}
+                  <BrilliantBadge count={brilliantCounts.get(g.id) ?? 0} />
+                </td>
                 <td className="opening" title={g.opening ?? undefined}>
                   {g.opening ?? '—'}
                 </td>
@@ -103,7 +110,14 @@ function accuracyCell(accuracy: number | null, usual: number | null) {
   const gap = usual === null ? 0 : accuracy - usual
   return (
     <>
-      {accuracy.toFixed(1)}% <span className="muted">~{estimateGameRating(accuracy)}</span>
+      {/* Tinted from red (poor) to green (excellent) by accuracy; the word is in the tooltip. */}
+      <span
+        className="play-rating"
+        style={{ '--hue': accuracyHue(accuracy) } as CSSProperties}
+        title={`${accuracyWord(accuracy)} game: ${accuracy.toFixed(1)}% accuracy, played like ~${estimateGameRating(accuracy)}`}
+      >
+        {accuracy.toFixed(1)}% <span className="muted">~{estimateGameRating(accuracy)}</span>
+      </span>
       {gap >= NOTABLE_GAP && (
         <span className="trend trend-up" title={`${gap.toFixed(1)} points above your average`}>
           {' '}▲
@@ -115,5 +129,16 @@ function accuracyCell(accuracy: number | null, usual: number | null) {
         </span>
       )}
     </>
+  )
+}
+
+/** A teal "!!" for games where the player made a brilliant move (with the count when more than one). */
+function BrilliantBadge({ count }: { count: number }) {
+  if (count === 0) return null
+  const label = `${count} brilliant move${count > 1 ? 's' : ''}`
+  return (
+    <span className="brilliant-badge" title={label} aria-label={label}>
+      !!{count > 1 && <span className="brilliant-count">×{count}</span>}
+    </span>
   )
 }

@@ -25,6 +25,9 @@
   --inaccuracy: #fab219;
   --mistake: #ec835a;
   --blunder: #e05252;
+  --brilliant: #2dd4bf;
+  /* Lightness of the red-to-green game rating colors (GameList), so they contrast with the page */
+  --rating-l: 55%;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color-scheme: dark;
 }
@@ -47,6 +50,8 @@
   --inaccuracy: #a87200;
   --mistake: #c4552c;
   --blunder: #c62f2f;
+  --brilliant: #0d6b63;
+  --rating-l: 28%;
   color-scheme: light;
 }
 
@@ -592,6 +597,9 @@ table.games {
 .dot-blunder {
   background: var(--blunder);
 }
+.dot-brilliant {
+  background: var(--brilliant);
+}
 
 .eval-graph {
   position: relative;
@@ -672,6 +680,9 @@ table.games {
 }
 .marker-blunder {
   fill: var(--blunder);
+}
+.marker-brilliant {
+  fill: var(--brilliant);
 }
 
 .graph-tooltip {
@@ -882,6 +893,32 @@ tr.muted td {
   color: var(--muted);
 }
 
+.play-rating {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid hsl(var(--hue) 70% var(--rating-l));
+  border-radius: 4px;
+  background: hsl(var(--hue) 70% var(--rating-l) / 0.18);
+  white-space: nowrap;
+}
+
+.brilliant-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--brilliant);
+  border-radius: 4px;
+  color: var(--brilliant);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.brilliant-count {
+  margin-left: 2px;
+  font-weight: 500;
+}
+
 tr.openable {
   cursor: pointer;
 }
@@ -920,6 +957,10 @@ tr.openable {
 .move-card-blunder {
   border-color: var(--blunder);
   box-shadow: inset 0 0 0 1px var(--blunder);
+}
+.move-card-brilliant {
+  border-color: var(--brilliant);
+  box-shadow: inset 0 0 0 1px var(--brilliant);
 }
 
 .move-card-head {
@@ -1062,6 +1103,9 @@ tr.openable {
 }
 .symbol-blunder {
   color: var(--blunder);
+}
+.symbol-brilliant {
+  color: var(--brilliant);
 }
 .move-cell[aria-current='true'] .move-symbol {
   color: inherit;

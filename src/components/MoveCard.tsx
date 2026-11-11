@@ -68,7 +68,7 @@ export function MoveCard({ move, next, myColor, showBest, onToggleBest }: Props)
             {showBest ? 'Hide best move' : `Best was ${move.bestMoveSan ?? move.bestMoveUci}: show on board`}
           </button>
         ) : (
-          <span className="muted">{move.class === 'best' ? 'Stockfish’s top choice' : ''}</span>
+          <span className="muted">Stockfish’s top choice</span>
         )}
       </div>
     </div>

@@ -36,6 +36,11 @@ export function accuracyOf({ game, moves }: ClassifiedGame): GameAccuracy {
   return { mine: gameAccuracy(moves, game.myColor), theirs: gameAccuracy(moves, opponent) }
 }
 
+/** How many brilliant moves the player (not their opponent) made in a game. */
+export function brilliantCountOf({ game, moves }: ClassifiedGame): number {
+  return moves.filter((m) => m.color === game.myColor && m.class === 'brilliant').length
+}
+
 export interface Summary {
   /** The player's average game accuracy, or null with no games. */
   accuracy: number | null

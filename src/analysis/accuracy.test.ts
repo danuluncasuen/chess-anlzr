@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PositionEval, Score } from '../engine/types'
-import { gameAccuracy, moveAccuracy } from './accuracy'
+import { accuracyHue, accuracyWord, gameAccuracy, moveAccuracy } from './accuracy'
 import { classifyGame } from './classify'
 
 const cp = (value: number): Score => ({ type: 'cp', value })
@@ -58,5 +58,21 @@ describe('gameAccuracy', () => {
     const moves = movesFor('1. e4 *', [ev(20), ev(20)])
     expect(gameAccuracy(moves, 'black')).toBeNull()
     expect(gameAccuracy([], 'white')).toBeNull()
+  })
+})
+
+describe('accuracyHue', () => {
+  it('runs from red for poor games to green for great ones', () => {
+    expect(accuracyHue(40)).toBe(0)
+    expect(accuracyHue(55)).toBe(0)
+    expect(accuracyHue(92)).toBe(130)
+    expect(accuracyHue(99)).toBe(130)
+    expect(accuracyHue(73.5)).toBe(65) // halfway: yellow
+  })
+})
+
+describe('accuracyWord', () => {
+  it('names the band', () => {
+    expect([95, 85, 75, 65, 50].map(accuracyWord)).toEqual(['excellent', 'good', 'decent', 'shaky', 'poor'])
   })
 })
