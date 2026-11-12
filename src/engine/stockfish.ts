@@ -19,13 +19,15 @@ export class StockfishEngine implements Engine {
   private failure: Error | null = null
   /** Tail of the one-search-at-a-time chain. */
   private queue: Promise<unknown> = Promise.resolve()
+  /** The engine's current MultiPV setting (how many lines it scores). */
+  private lines = 1
 
   init(): Promise<string> {
     this.ready ??= this.start()
     return this.ready
   }
 
-  evaluate(fen: string, options: { depth: number; signal?: AbortSignal }): Promise<PositionEval> {
+  evaluate(fen: string, options: { depth: number; lines?: number; signal?: AbortSignal }): Promise<PositionEval> {
     const run = () => this.search(fen, options)
     const result = this.queue.then(run, run)
     this.queue = result.catch(() => {})
@@ -57,12 +59,17 @@ export class StockfishEngine implements Engine {
 
   private async search(
     fen: string,
-    { depth, signal }: { depth: number; signal?: AbortSignal },
+    { depth, lines = 1, signal }: { depth: number; lines?: number; signal?: AbortSignal },
   ): Promise<PositionEval> {
     await this.init()
     if (signal?.aborted) throw abortError()
+    if (lines !== this.lines) {
+      this.worker?.postMessage(`setoption name MultiPV value ${lines}`)
+      this.lines = lines
+    }
 
     let last: InfoLine | null = null
+    let second: InfoLine | null = null
     let bestMove: string | null = null
     const onAbort = () => this.worker?.postMessage('stop')
     signal?.addEventListener('abort', onAbort, { once: true })
@@ -71,6 +78,7 @@ export class StockfishEngine implements Engine {
       await this.send(`go depth ${depth}`, (line) => {
         const info = parseInfo(line)
         if (info && info.multipv === 1 && !info.bound) last = info
+        if (info && info.multipv === 2 && !info.bound) second = info
         const best = parseBestMove(line)
         if (best === undefined) return false
         bestMove = best
@@ -84,7 +92,13 @@ export class StockfishEngine implements Engine {
     if (signal?.aborted) throw abortError()
     const info = last as InfoLine | null
     if (!info) throw new Error(`Engine returned no score for ${fen}`)
-    return { score: toWhitePov(info.score, sideToMove(fen)), bestMove, depth: info.depth }
+    const side = sideToMove(fen)
+    const result: PositionEval = { score: toWhitePov(info.score, side), bestMove, depth: info.depth }
+    if (lines > 1) {
+      const secondLine = second as InfoLine | null
+      result.secondScore = secondLine ? toWhitePov(secondLine.score, side) : null
+    }
+    return result
   }
 
   /** Posts a command and resolves once `isDone` accepts an output line. */

@@ -12,6 +12,11 @@ export interface PositionEval {
   /** Best move in UCI form ("e2e4"), or null if the game is over in this position. */
   bestMove: string | null
   depth: number
+  /**
+   * Score (White's view) of the engine's second-best move, when two lines were asked for; null when
+   * there's only one legal move. Absent from single-line evaluations.
+   */
+  secondScore?: Score | null
 }
 
 /**
@@ -22,7 +27,8 @@ export interface Engine {
   /** Starts the engine and returns its id (e.g. "Stockfish 19 Lite WASM"), stored with each analysis. */
   init(): Promise<string>
   /** Evaluates one position. Rejects with an AbortError if `signal` fires. */
-  evaluate(fen: string, options: { depth: number; signal?: AbortSignal }): Promise<PositionEval>
+  /** `lines`: how many best moves to score (1 = just the best, 2 = also the second-best). */
+  evaluate(fen: string, options: { depth: number; lines?: number; signal?: AbortSignal }): Promise<PositionEval>
   dispose(): void
 }
 

@@ -15,7 +15,10 @@ class FakeEngine implements Engine {
   async init() {
     return this.id
   }
-  evaluate(_fen: string, { depth, signal }: { depth: number; signal?: AbortSignal }) {
+  /** The `lines` option of every evaluation asked for. */
+  lines: (number | undefined)[] = []
+  evaluate(_fen: string, { depth, lines, signal }: { depth: number; lines?: number; signal?: AbortSignal }) {
+    this.lines.push(lines)
     return new Promise<PositionEval>((resolve, reject) => {
       if (signal?.aborted) return reject(abortError())
       setTimeout(() => {
@@ -113,6 +116,19 @@ describe('AnalysisQueue', () => {
     await settled(newer)
     expect(engine.evaluated).toBe(4)
     expect((await db.analyses.get('a'))?.engineId).toBe('New engine')
+  })
+
+  it('asks for two engine lines and redoes analyses saved with only one', async () => {
+    // An analysis from before second-best scores were kept (no `lines` field).
+    await db.analyses.put({ gameId: 'a', engineId: 'Fake 1', depth: 12, plies: [], analyzedAt: 0 })
+    const engine = new FakeEngine()
+    const queue = new AnalysisQueue(() => engine, 12)
+    await queue.setGames([game('a')])
+    queue.start()
+    await settled(queue)
+    expect(engine.evaluated).toBe(4)
+    expect(engine.lines).toEqual([2, 2, 2, 2])
+    expect((await db.analyses.get('a'))?.lines).toBe(2)
   })
 
   it('pauses mid-game and resumes without redoing finished games', async () => {

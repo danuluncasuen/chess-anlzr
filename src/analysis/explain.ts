@@ -127,10 +127,13 @@ function explainSacrifice(move: MoveAnalysis, next: MoveAnalysis | undefined, mi
   const piece = new Chess(move.fenBefore).get(move.uci.slice(0, 2) as Square)
   const given = sacrificedMaterial(move.fenBefore, move.uci)
   const offered = `${mine ? 'you offered your' : 'your opponent offered their'} ${piece ? PIECE_NAME[piece.type] : 'piece'}`
-  const verdict = hasBetterMove(move)
-    ? `Stockfish rates it nearly as good as its own choice, ${move.bestMoveSan ?? move.bestMoveUci}`
-    : 'Stockfish rates it the best move'
-  const sentences = [`A sacrifice: ${offered}, giving up ${given} points of material, and ${verdict}.`]
+  const pct = (p: number) => `${Math.round(p * 100)}%`
+  const sentences = [`A sacrifice: ${offered}, giving up ${given} points of material, and it’s Stockfish’s best move.`]
+  if (move.secondBestWinProb !== null) {
+    sentences.push(
+      `It was the one strong move: it kept ${mine ? 'your' : 'their'} winning chances at ${pct(move.winProbBefore)}, where the next best would have left ${pct(move.secondBestWinProb)}.`,
+    )
+  }
   if (next) {
     // "Taken" when the next move captures on the square the sacrificed piece went to.
     const taken = !!next.captured && next.uci.slice(2, 4) === move.uci.slice(2, 4)

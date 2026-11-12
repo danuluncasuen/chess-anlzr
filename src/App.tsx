@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent } from 'react'
 import { AnalysisQueue } from './analysis/queue'
+import { filterByType, type TypeFilter as TypeFilterValue } from './analysis/gameTypes'
 import { accuracyOf, brilliantCountOf, summarize } from './analysis/summary'
 import { useClassifiedGames } from './analysis/useClassifiedGames'
 import { AnalysisPanel } from './components/AnalysisPanel'
@@ -10,6 +11,7 @@ import { Intro } from './components/Intro'
 import { SummaryView } from './components/SummaryView'
 import { clearSavedData, LAST_USER_KEY, requestPersistentStorage } from './db/storage'
 import { ThemeToggle } from './components/ThemeToggle'
+import { TypeFilter } from './components/TypeFilter'
 import { StockfishEngine } from './engine/stockfish'
 import { chessComSource } from './sources/chesscom/source'
 import type { Game } from './types'
@@ -40,6 +42,7 @@ export default function App() {
   const [username, setUsername] = useState(readLastUsername)
   const [limit, setLimit] = useState(DEFAULT_LIMIT)
   const [games, setGames] = useState<Game[] | null>(null)
+  const [typeFilter, setTypeFilter] = useState<TypeFilterValue>('all')
   const [openGameId, setOpenGameId] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -111,6 +114,7 @@ export default function App() {
         onProgress: (p) => setStatus(p.message),
       })
       setGames(result)
+      setTypeFilter('all')
       // The user is now relying on saved analyses: ask the browser not to clean them up.
       void requestPersistentStorage()
       setOpenGameId(null)
@@ -128,7 +132,13 @@ export default function App() {
   }
 
   const classified = useClassifiedGames(games, queueState.analyzed)
-  const summary = useMemo(() => summarize(classified), [classified])
+  // The type filter narrows the summary (and so the "usual" accuracy) and the list together.
+  const shownGames = useMemo(() => (games ? filterByType(games, typeFilter) : []), [games, typeFilter])
+  const shownClassified = useMemo(
+    () => (typeFilter === 'all' ? classified : classified.filter((c) => c.game.timeClass === typeFilter)),
+    [classified, typeFilter],
+  )
+  const summary = useMemo(() => summarize(shownClassified), [shownClassified])
   const accuracies = useMemo(
     () => new Map(classified.map((c) => [c.game.id, accuracyOf(c)])),
     [classified],
@@ -198,10 +208,12 @@ export default function App() {
             onBack={() => history.back()}
           />
         )}
-        {games && !openGame && <SummaryView summary={summary} totalGames={games.length} />}
+        {games && !openGame && <TypeFilter games={games} value={typeFilter} onChange={setTypeFilter} />}
+        {games && !openGame && <SummaryView summary={summary} totalGames={shownGames.length} />}
         {games && !openGame && (
           <GameList
-            games={games}
+            games={shownGames}
+            grouped={typeFilter === 'all'}
             analysis={queueState}
             accuracies={accuracies}
             brilliantCounts={brilliantCounts}

@@ -6,6 +6,11 @@ import { materialBalance, PIECE_VALUE } from '../chess/material'
 
 /** Material given up, in points, to count as a sacrifice: a piece for a pawn, or the exchange. */
 export const MIN_SACRIFICE = 2
+/**
+ * How much better than the engine's second-best move a brilliant move must be, in winning chances:
+ * it has to be the one strong move, not one of several.
+ */
+export const ONLY_MOVE_MARGIN = 0.1
 /** Not brilliant when the mover was already this sure to win... */
 const MAX_WIN_BEFORE = 0.9
 /** ...or ends up worse than this afterwards. */
@@ -55,8 +60,9 @@ export function sacrificedMaterial(fenBefore: string, uci: string): number {
 }
 
 /**
- * Whether a move is brilliant: Stockfish's own choice, offering the moved piece (knight or better)
- * for at least MIN_SACRIFICE points, in a position that wasn't already won and doesn't end up worse.
+ * Whether a move is brilliant: Stockfish's own choice and clearly better than its second-best
+ * (ONLY_MOVE_MARGIN), offering the moved piece (knight or better) for at least MIN_SACRIFICE points,
+ * in a position that wasn't already won and doesn't end up worse.
  */
 export function isBrilliant(m: {
   fenBefore: string
@@ -65,8 +71,11 @@ export function isBrilliant(m: {
   isBest: boolean
   winProbBefore: number
   winProbAfter: number
+  /** The mover's winning chances with the second-best move (null: unknown, or no alternative). */
+  secondBestWinProb: number | null
 }): boolean {
   if (!m.isBest) return false
+  if (m.secondBestWinProb === null || m.winProbBefore - m.secondBestWinProb < ONLY_MOVE_MARGIN) return false
   if (m.winProbBefore > MAX_WIN_BEFORE || m.winProbAfter < MIN_WIN_AFTER) return false
   // The only legal move is never brilliant, however much it gives up.
   if (new Chess(m.fenBefore).moves().length < 2) return false

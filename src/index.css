@@ -926,6 +926,55 @@ tr.muted td {
   white-space: nowrap;
 }
 
+/* Game type filter chips, above the summary. */
+.type-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 16px 0 0;
+}
+
+.type-chip {
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.type-chip:hover {
+  border-color: var(--muted);
+}
+
+.type-chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.type-count {
+  margin-left: 2px;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Section headers when the game list is grouped by type. */
+.games tr.group-row th {
+  padding: 14px 8px 6px;
+  border-bottom: 1px solid var(--fg);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.games tr.group-row th .muted {
+  font-weight: 400;
+}
+
 .brilliant-badge {
   display: inline-block;
   margin-left: 6px;
@@ -1307,6 +1356,16 @@ tr.openable {
     display: none;
   }
 
+  .games tr.group-row {
+    display: block;
+    padding: 16px 2px 4px;
+  }
+
+  .games tr.group-row th {
+    display: block;
+    padding: 0 0 6px;
+  }
+
   .games tr {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -1371,6 +1430,7 @@ tr.openable {
   .view-button,
   .analysis button,
   .board-controls button,
+  .type-chip,
   .theme-toggle {
     min-height: 40px;
   }

@@ -32,6 +32,8 @@ export interface Analysis {
   /** e.g. "Stockfish 19 Lite WASM" */
   engineId: string
   depth: number
+  /** Engine lines scored per position (2 = best and second-best). Older analyses lack it, meaning 1. */
+  lines?: number
   /**
    * One entry per position: plies[0] is the start, plies[i] the position after ply i
    * (same indexing as GamePositions.positions). Scores are from White's point of view.

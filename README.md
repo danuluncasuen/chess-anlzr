@@ -50,6 +50,7 @@ src/
   analysis/usePositionEval.ts  On-demand engine eval for positions you try (its own engine, separate from the queue)
   chess/material.ts        Piece values (1/3/3/5/9), material balance of a position, captures per side
   analysis/brilliant.ts    Brilliant moves (!!): sound piece sacrifices, with a static exchange evaluation
+  analysis/gameTypes.ts    Game type order/labels, grouping and filtering games by type
   analysis/explain.ts      Plain-language "why" for an error: mate allowed/missed, the punishing reply and
                            whether it was played, what it takes (and if undefended), what the best move does
   analysis/rating.ts       Rough rating estimate from accuracy (calibrated anchor points)
@@ -77,6 +78,7 @@ src/
   public/manifest.webmanifest   Home-screen name, colors and icons (icons from scripts/make-icons.mjs)
   theme.ts                 Theme choice (night default, cream alternative), saved in localStorage
   index.css                Color tokens for both themes (#212121 charcoal / #ffe2bd cream) + styles
+  components/TypeFilter.tsx     Chips to show all games or one type (bullet/blitz/rapid/daily), with counts
   components/Footer.tsx         License/source notices, chess.com disclaimer, saved-data size + "Clear saved data"
   db/storage.ts            Persistent-storage request, saved-data size, clearing games/analyses/username
   App.tsx                  Sticky top bar (logo back to start, username form, section links) + views
@@ -92,8 +94,11 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
   the data (`navigator.storage.persist()`; Chrome decides by engagement, Firefox may ask once). The footer
   shows the size and can delete games, analyses and the remembered username (the theme stays).
 - **Cache:** completed months are cached indefinitely, the current month for 10 minutes and the archive list for 1 hour.
-- **Engine:** Stockfish 19 lite single-threaded (~1.8 MB), depth 12. About 5 s per game in Chrome on a laptop.
+- **Engine:** Stockfish 19 lite single-threaded (~1.8 MB), depth 12. About 9 s per game in Chrome on a laptop (two lines; ~5 s with one).
   Analyses store the engine id and depth; games are re-analyzed automatically if either changes.
+  The game analysis asks Stockfish for its two best moves per position (MultiPV 2, `ANALYSIS_LINES`) so
+  brilliant moves can be checked against the second-best: about 1.9× the time of one line. Analyses saved
+  with one line are redone automatically.
 - **License:** chess-anlzr is GPL-3.0-or-later ([LICENSE](LICENSE)), matching Stockfish (GPL-3.0), which the
   site distributes. The build copies Stockfish's license to `engine/COPYING.txt` next to the engine, and the page
   footer links it, Stockfish's source and this repo. Keep the repo public. A paid hosted service (accounts,
@@ -118,10 +123,11 @@ scripts/copy-engine.mjs    Copies the Stockfish lite build into public/engine/ (
   Pieces can be dragged (or tapped, then a target tapped) to try a line from the shown position; legal moves
   only (`src/chess/variation.ts`), pawns always promote to a queen. A second Stockfish evaluates each position
   of the line at the same depth as the game analysis. Selecting any game move leaves the line.
-- **Brilliant (!!):** Stockfish's own move that offers the moved piece (knight, bishop, rook or queen)
+- **Brilliant (!!):** Stockfish's own move, at least 10 points of winning chances better than its second-best
+  (`ONLY_MOVE_MARGIN`; the one strong move), that offers the moved piece (knight, bishop, rook or queen)
   where the opponent wins at least 2 points net once the captures on that square play out (pawn moves
   and even trades never count), played when the mover wasn't already over 90% to win and stays at 40%+.
-  About 0.3% of moves on a sample of 30 club games (classic Bxf7+, Bxh2+ sacrifices).
+  On a sample of 30 club games (1,726 moves) that leaves one: 19... Bxh2+, 77% against 26% for the next best.
 - **Classification:** a move's loss is the drop in the mover's winning chances (Lichess formula, evals capped at
   ±10 pawns). Thresholds 5 / 10 / 15 points = inaccuracy / mistake / blunder, in `THRESHOLDS` in classify.ts.
   Playing the engine's best move always counts as "best".
