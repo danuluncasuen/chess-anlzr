@@ -24,6 +24,8 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const width = useWidth(wrapRef)
   const [hover, setHover] = useState<number | null>(null)
+  // A finger (or pen) on the graph: dragging sideways scrubs through the moves.
+  const scrubbing = useRef(false)
 
   const mine = (whiteProb: number) => (myColor === 'white' ? whiteProb : 1 - whiteProb)
   const points = [
@@ -79,7 +81,20 @@ export function EvalGraph({ moves, myColor, selected, onSelect }: Props) {
           aria-label="Your winning chances after each move. Use the arrow keys to step through moves."
           tabIndex={0}
           onKeyDown={onKeyDown}
-          onPointerMove={(e) => setHover(indexAt(e))}
+          onPointerDown={(e) => {
+            if (e.pointerType === 'mouse') return
+            scrubbing.current = true
+            onSelect(indexAt(e))
+            // Keep getting the moves when the finger slides off the graph.
+            e.currentTarget.setPointerCapture?.(e.pointerId)
+          }}
+          onPointerMove={(e) => {
+            if (!scrubbing.current) return setHover(e.pointerType === 'mouse' ? indexAt(e) : null)
+            const i = indexAt(e)
+            if (i !== selected) onSelect(i)
+          }}
+          onPointerUp={() => (scrubbing.current = false)}
+          onPointerCancel={() => (scrubbing.current = false)}
           onPointerLeave={() => setHover(null)}
           onClick={(e) => onSelect(indexAt(e))}
         >

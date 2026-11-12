@@ -945,6 +945,7 @@ tr.muted td {
 }
 
 .type-chip {
+  flex: none;
   font: inherit;
   font-size: 13px;
   padding: 4px 12px;
@@ -1305,11 +1306,28 @@ tr.openable {
     flex: none;
     max-height: 220px;
   }
+
+  /* Stacked, the move's explanation (or your own line's card) goes right under the board, so both
+     are in view while stepping through; then the graph, then the move list. */
+  .graph-column {
+    display: contents;
+  }
+  .graph-column > .eval-graph {
+    order: 1;
+  }
+  .graph-column > .move-list {
+    order: 2;
+  }
 }
 
 @media (max-width: 640px) {
   html {
     scroll-padding-top: 116px;
+  }
+
+  /* Jumps to the summary or the list land below the pinned game-type chips too. */
+  html:has(.type-filter) {
+    scroll-padding-top: 172px;
   }
 
   .game-board {
@@ -1364,6 +1382,20 @@ tr.openable {
   .games thead,
   .games td.color {
     display: none;
+  }
+
+  /* The game-type chips stay in reach while scrolling the summary and the list. */
+  .type-filter {
+    position: sticky;
+    top: 104px; /* just under the two-row top bar (105px) */
+    z-index: 5;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 8px -12px 0;
+    padding: 8px 12px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
   }
 
   .games tr.group-row {
