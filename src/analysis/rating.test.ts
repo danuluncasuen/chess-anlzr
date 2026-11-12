@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { estimateGameRating, estimateRating, estimateRatingRange, expectedAccuracy } from './rating'
+import {
+  averageWeight,
+  estimateGameRating,
+  estimateRating,
+  estimateRatingRange,
+  expectedAccuracy,
+  GAME_WEIGHT,
+} from './rating'
 
 describe('estimateRating', () => {
   it('follows the calibrated curve', () => {
@@ -27,6 +34,31 @@ describe('estimateRatingRange', () => {
     expect(thirty.low).toBeLessThan(1000)
     expect(thirty.high).toBeGreaterThan(1000)
     expect(thirty.high - thirty.low).toBeLessThan(one.high - one.low)
+  })
+
+  it('agrees with the single-game estimate for one game', () => {
+    for (const accuracy of [55, 69.9, 82.7, 90]) {
+      expect(estimateRatingRange(accuracy, 1).estimate).toBe(estimateGameRating(accuracy))
+    }
+  })
+
+  it('stays within the games’ own estimates (the rapid games that prompted this)', () => {
+    const games = [84.0, 82.0, 67.9, 71.7, 58.8, 58.9]
+    const average = games.reduce((s, a) => s + a, 0) / games.length
+    const perGame = games.map(estimateGameRating)
+    const { estimate, low, high } = estimateRatingRange(average, games.length)
+    // Before, the raw curve gave ~600, below every one of the six games.
+    expect(estimate).toBe(700)
+    expect(estimate).toBeGreaterThanOrEqual(Math.min(...perGame))
+    expect(estimate).toBeLessThanOrEqual(Math.max(...perGame))
+    expect([low, high]).toEqual([400, 1300])
+  })
+
+  it('trusts the average more as games add up', () => {
+    expect(averageWeight(1)).toBe(GAME_WEIGHT)
+    expect(averageWeight(6)).toBeCloseTo(0.667, 3)
+    expect(averageWeight(30)).toBeCloseTo(0.909, 3)
+    expect(estimateRatingRange(70.5, 30).estimate).toBeLessThan(estimateRatingRange(70.5, 6).estimate)
   })
 })
 

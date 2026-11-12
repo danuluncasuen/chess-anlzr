@@ -36,7 +36,12 @@ export function SummaryView({ summary, totalGames }: Props) {
         {summary.accuracy !== null && (
           <>
             <StatTile value={`${summary.accuracy.toFixed(1)}%`} label="average accuracy" />
-            <RatingTile accuracy={summary.accuracy} games={overall.games} rating={summary.rating} />
+            <RatingTile
+              accuracy={summary.accuracy}
+              games={overall.games}
+              rating={summary.rating}
+              otherType={onlyOtherType(summary.byTimeClass)}
+            />
           </>
         )}
         <StatTile value={overall.avgLoss.toFixed(1)} label="points lost per move" />
@@ -60,7 +65,17 @@ export function SummaryView({ summary, totalGames }: Props) {
   )
 }
 
-function RatingTile({ accuracy, games, rating }: { accuracy: number; games: number; rating: number | null }) {
+function RatingTile({
+  accuracy,
+  games,
+  rating,
+  otherType,
+}: {
+  accuracy: number
+  games: number
+  rating: number | null
+  otherType: string | null
+}) {
   const { estimate, low, high } = estimateRatingRange(accuracy, games)
   return (
     <div
@@ -70,10 +85,20 @@ function RatingTile({ accuracy, games, rating }: { accuracy: number; games: numb
       <strong>~{estimate}</strong>
       <span>
         rating your accuracy suggests (likely {low}–{high})
-        {rating !== null && `; you're rated ~${Math.round(rating)}`}
+        {rating !== null && `; you're rated ~${Math.round(rating)}${otherType ? ` in ${otherType}` : ''}`}
+        {otherType && '. Calibrated on blitz, so it compares best with a blitz rating'}
       </span>
     </div>
   )
+}
+
+/**
+ * The game type (lowercase) when every game is of one type other than blitz, which the rating
+ * estimate isn't calibrated on (ratings run differently per type); otherwise null.
+ */
+function onlyOtherType(byTimeClass: GroupStats[]): string | null {
+  const only = byTimeClass.length === 1 ? byTimeClass[0]! : null
+  return only && only.key !== 'blitz' ? only.label.toLowerCase() : null
 }
 
 function StatTile({ value, label }: { value: string; label: string }) {
