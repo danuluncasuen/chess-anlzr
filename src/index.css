@@ -945,7 +945,6 @@ tr.muted td {
 }
 
 .type-chip {
-  flex: none;
   font: inherit;
   font-size: 13px;
   padding: 4px 12px;
@@ -1382,20 +1381,6 @@ tr.openable {
   .games thead,
   .games td.color {
     display: none;
-  }
-
-  /* The game-type chips stay in reach while scrolling the summary and the list. */
-  .type-filter {
-    position: sticky;
-    top: 104px; /* just under the two-row top bar (105px) */
-    z-index: 5;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin: 8px -12px 0;
-    padding: 8px 12px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
   }
 
   .games tr.group-row {
