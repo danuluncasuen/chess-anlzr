@@ -12,20 +12,25 @@ const LAST_MOVE_TINT = 'rgba(255, 214, 10, 0.45)'
 /** Square tint and arrow color for the played move, by its rating (same hues as the dots). */
 const CLASS_COLOR: Partial<Record<MoveClass, string>> = {
   brilliant: 'rgba(45, 212, 191, 0.7)',
+  best: 'rgba(59, 130, 246, 0.6)',
+  ok: 'rgba(110, 190, 75, 0.6)',
   inaccuracy: 'rgba(250, 178, 25, 0.75)',
   mistake: 'rgba(236, 131, 90, 0.8)',
   blunder: 'rgba(208, 59, 59, 0.8)',
 }
-const BEST_ARROW = 'rgba(46, 160, 67, 0.9)'
-/** The last move of the player's own line, and the piece they've picked up (tap-to-move). */
-const VARIATION_TINT = 'rgba(80, 150, 255, 0.45)'
-const PICKED_TINT = 'rgba(80, 150, 255, 0.6)'
+/** Stockfish's choice is the best move, so its arrow is the best-move blue. */
+const BEST_ARROW = 'rgba(59, 130, 246, 0.9)'
+/** The last move of the player's own line, and the piece they've picked up (tap-to-move). Violet, apart from the best-move blue. */
+const VARIATION_TINT = 'rgba(167, 112, 240, 0.5)'
+const PICKED_TINT = 'rgba(167, 112, 240, 0.65)'
 /** A dot on each square the picked-up piece can move to. */
 const TARGET_STYLE: CSSProperties = {
   backgroundImage: 'radial-gradient(circle, rgba(33, 33, 33, 0.35) 20%, transparent 22%)',
 }
 const ARROW_NAME: Partial<Record<MoveClass, string>> = {
   brilliant: 'teal',
+  best: 'blue',
+  ok: 'green',
   inaccuracy: 'amber',
   mistake: 'orange',
   blunder: 'red',
@@ -223,7 +228,7 @@ export function GameBoard({
           : !move
             ? 'Starting position · move a piece to try your own line'
             : showBest
-              ? `Before ${moveLabel(move)}: the move played (${ARROW_NAME[move.class] ?? 'yellow'}) vs Stockfish’s ${move.bestMoveSan ?? 'choice'} (green)`
+              ? `Before ${moveLabel(move)}: the move played (${ARROW_NAME[move.class] ?? 'yellow'}) vs Stockfish’s ${move.bestMoveSan ?? 'choice'} (blue)`
               : `After ${moveLabel(move)} · move a piece to try your own line`}
       </p>
     </div>

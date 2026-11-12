@@ -153,7 +153,7 @@ export function formatScore(score: Score): string {
 export const CLASS_LABEL: Record<MoveClass, string> = {
   brilliant: 'Brilliant',
   best: 'Best',
-  ok: 'OK',
+  ok: 'Good',
   inaccuracy: 'Inaccuracy',
   mistake: 'Mistake',
   blunder: 'Blunder',
