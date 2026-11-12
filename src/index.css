@@ -1305,11 +1305,28 @@ tr.openable {
     flex: none;
     max-height: 220px;
   }
+
+  /* Stacked, the move's explanation (or your own line's card) goes right under the board, so both
+     are in view while stepping through; then the graph, then the move list. */
+  .graph-column {
+    display: contents;
+  }
+  .graph-column > .eval-graph {
+    order: 1;
+  }
+  .graph-column > .move-list {
+    order: 2;
+  }
 }
 
 @media (max-width: 640px) {
   html {
     scroll-padding-top: 116px;
+  }
+
+  /* Jumps to the summary or the list land below the pinned game-type chips too. */
+  html:has(.type-filter) {
+    scroll-padding-top: 172px;
   }
 
   .game-board {

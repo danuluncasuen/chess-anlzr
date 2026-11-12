@@ -4,17 +4,20 @@ import type { MoveClass } from '../analysis/classify'
  * How the board reacts to a move, by its rating: shake distance (px), ring width (px), and for a
  * brilliant move a small celebratory "pop" (scale) instead of a shake.
  */
-const IMPACT: Partial<Record<MoveClass, { shake: number; ring: number; color: string; pop?: number }>> = {
+const IMPACT: Partial<
+  Record<MoveClass, { shake: number; ring: number; color: string; pop?: number; buzz?: number[] }>
+> = {
   brilliant: { shake: 0, ring: 5, color: '--brilliant', pop: 0.025 },
-  blunder: { shake: 7, ring: 5, color: '--blunder' },
-  mistake: { shake: 3, ring: 4, color: '--mistake' },
+  blunder: { shake: 7, ring: 5, color: '--blunder', buzz: [45, 60, 45] },
+  mistake: { shake: 3, ring: 4, color: '--mistake', buzz: [25] },
   inaccuracy: { shake: 0, ring: 3, color: '--inaccuracy' },
 }
 
 /**
  * Shakes `el` and flashes a colored ring around it, harder for worse moves: a clear shake for a
  * blunder, a small one for a mistake, only a faint ring for an inaccuracy. A brilliant move gets a
- * teal ring and a small pop instead. With reduced motion turned on, there's only the ring.
+ * teal ring and a small pop instead. On phones that can vibrate, blunders and mistakes also buzz. With
+ * reduced motion turned on, there's only the ring.
  */
 export function playImpact(el: HTMLElement | null, moveClass: MoveClass | undefined): void {
   if (!el || typeof el.animate !== 'function') return
@@ -35,6 +38,8 @@ export function playImpact(el: HTMLElement | null, moveClass: MoveClass | undefi
 
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   if (reduceMotion) return
+  // Phones that support it (Android; not iPhone) also buzz: twice for a blunder, briefly for a mistake.
+  if (impact.buzz) navigator.vibrate?.(impact.buzz)
   if (impact.pop) {
     el.animate([{ transform: 'scale(1)' }, { transform: `scale(${1 + impact.pop})` }, { transform: 'scale(1)' }], {
       duration: 500,
