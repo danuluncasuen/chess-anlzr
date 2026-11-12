@@ -74,7 +74,7 @@ export function ExplorerCard({ variation, startLabel, gameScore, evaluation, err
                 ? 'Game over in this position'
                 : reply && (
                     <>
-                      Stockfish would play <strong>{reply}</strong> (green arrow)
+                      Stockfish would play <strong>{reply}</strong> (blue arrow)
                     </>
                   )}
             </span>
